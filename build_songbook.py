@@ -287,9 +287,31 @@ def parse_song(file_path: Path) -> dict:
     }
 
 
+def render_chord_progression(prog_lines: list[str]) -> str:
+    all_chords = []
+    for line in prog_lines:
+        if '|' not in line:
+            continue
+        parts = [p.strip() for p in line.split('|')]
+        for part in parts:
+            chord = part.strip()
+            if chord:
+                all_chords.append(chord)
+    if not all_chords:
+        return "<span>(Ingen chord progression)</span>"
+    chips = []
+    for chord in all_chords:
+        color = get_chord_color(chord)
+        chips.append(
+            f'<span class="prog-chord" style="color:{color};border-color:{color};background:color-mix(in srgb,{color} 15%,transparent);">'
+            f'{html.escape(chord)}</span>'
+        )
+    return f'<div class="prog-grid">{"".join(chips)}</div>'
+
+
 def render_song(song: dict) -> str:
     theme = THEMES.get(song["title"], THEMES["default"])
-    chords_html = "\n".join(f"<div>{html.escape(line)}</div>" for line in song["chord_progression"])
+    chords_html = render_chord_progression(song["chord_progression"])
     lyrics_html = render_lyrics_with_chords(song["lyrics"])
     strum_visual = render_strumming_visual(song["strumming"])
     bpm = theme.get("bpm", 120)
@@ -392,7 +414,8 @@ def build_html(songs: list[dict]) -> str:
     .info-card-small {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 8px 20px rgba(0,0,0,.15); backdrop-filter: blur(10px); position: relative; }}
     .info-card h2 {{ margin: 0 0 12px; font-size: 0.95rem; color: #e6f1ff; font-weight: 600; }}
     .info-card-small h2 {{ margin: 0 0 8px; font-size: 0.85rem; color: #e6f1ff; font-weight: 600; }}
-    .progression div {{ margin-bottom: 6px; font-family: ui-monospace, monospace; color: #f8f8fb; font-size: 0.95rem; }}
+    .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
+    .prog-chord {{ font-weight: 700; font-size: 0.9rem; padding: 6px 4px; border-radius: 8px; border: 1px solid; text-align: center; letter-spacing: 0.02em; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
     .strum-visual {{ display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }}
     .strum-step {{ display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 14px; font-size: 1rem; font-weight: 700; background: rgba(255,255,255,.1); color: #f4f4f8; box-shadow: inset 0 -1px 0 rgba(0,0,0,.2); }}
