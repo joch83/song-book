@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 SONG_DIR = Path(__file__).parent
+SONGS_DIR = SONG_DIR / "songs"
 OUTPUT_FILE = SONG_DIR / "songbook.html"
 
 # Global chord color mapping - same chord always gets same color
@@ -68,7 +69,7 @@ DEFAULT_STRUMMING = {
 def load_image_as_base64(filename: str) -> str:
     """Load an image file and convert to base64 data URI."""
     try:
-        image_path = SONG_DIR / filename
+        image_path = SONGS_DIR / filename
         if image_path.exists():
             with open(image_path, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode("utf-8")
@@ -118,6 +119,16 @@ THEMES = {
         "note": "En klassisk väckarklocka för själen.",
         "bgImage": load_image_as_base64("You are my Sunshine.png"),
         "bpm": 80
+    },
+    "Patience": {
+        "slug": "patience",
+        "accent": "#e8a87c",
+        "bg1": "#1a0e0a",
+        "bg2": "#2e1c14",
+        "label": "Rock Ballad",
+        "note": "Ta det lugnt, känn varje ackord.",
+        "bgImage": load_image_as_base64("Patience.png"),
+        "bpm": 72
     },
     "default": {
         "slug": "default",
@@ -264,9 +275,7 @@ def parse_song(file_path: Path) -> dict:
             continue
 
         if in_prog:
-            if not line.strip() and prog_lines:
-                in_prog = False
-            elif line.strip():
+            if line.strip():
                 prog_lines.append(line)
         elif in_lyrics:
             lyrics_lines.append(line)
@@ -288,34 +297,65 @@ def parse_song(file_path: Path) -> dict:
 
 
 def render_chord_progression(prog_lines: list[str]) -> str:
-    all_chords = []
+    sections = []
+    current_label = None
+    current_bars = []
+
     for line in prog_lines:
-        if '|' not in line:
+        stripped = line.strip()
+        if not stripped:
             continue
-        parts = [p.strip() for p in line.split('|')]
-        for part in parts:
-            chord = part.strip()
-            if chord:
-                all_chords.append(chord)
-    if not all_chords:
+        if '|' in stripped:
+            for part in stripped.split('|'):
+                chords = part.split()
+                if chords:
+                    current_bars.append(chords)
+        else:
+            if current_bars:
+                sections.append((current_label, current_bars))
+                current_bars = []
+            current_label = stripped
+
+    if current_bars:
+        sections.append((current_label, current_bars))
+
+    if not sections:
         return "<span>(Ingen chord progression)</span>"
-    chips = []
-    for chord in all_chords:
-        color = get_chord_color(chord)
-        chips.append(
-            f'<span class="prog-chord" style="color:{color};border-color:{color};background:color-mix(in srgb,{color} 15%,transparent);">'
-            f'{html.escape(chord)}</span>'
-        )
-    return f'<div class="prog-grid">{"".join(chips)}</div>'
+
+    def make_chip(chords):
+        if len(chords) == 1:
+            color = get_chord_color(chords[0])
+            inner = f'<span style="color:{color};">{html.escape(chords[0])}</span>'
+            style = f'border-color:{color};background:color-mix(in srgb,{color} 15%,transparent);'
+        else:
+            inner = ' '.join(
+                f'<span style="color:{get_chord_color(c)};">{html.escape(c)}</span>'
+                for c in chords
+            )
+            style = 'border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.07);'
+        return f'<span class="prog-chord" style="{style}">{inner}</span>'
+
+    parts = []
+    for label, bars in sections:
+        chips = "".join(make_chip(b) for b in bars)
+        label_html = f'<div class="prog-label">{html.escape(label)}</div>' if label else ''
+        parts.append(f'<div class="prog-section">{label_html}<div class="prog-grid">{chips}</div></div>')
+
+    return "\n".join(parts)
 
 
 def render_song(song: dict) -> str:
-    theme = THEMES.get(song["title"], THEMES["default"])
+    theme = dict(THEMES.get(song["title"], THEMES["default"]))
+    if (not theme['bgImage'] or theme['bgImage'] == 'none') and (SONGS_DIR / f"{song['title']}.png").exists():
+        theme['bgImage'] = load_image_as_base64(f"{song['title']}.png")
     chords_html = render_chord_progression(song["chord_progression"])
     lyrics_html = render_lyrics_with_chords(song["lyrics"])
     strum_visual = render_strumming_visual(song["strumming"])
     bpm = theme.get("bpm", 120)
-    bg_image_css = f"background-image: url('data:image/png;base64,{theme['bgImage']}');" if theme['bgImage'] else ""
+    if theme['bgImage'] and theme['bgImage'] != 'none':
+        bg_image_css = f"background-image: url('data:image/png;base64,{theme['bgImage']}');"
+    else:
+        bg_image_css = f"background-image: linear-gradient(135deg, {theme['bg1']} 0%, {theme['bg2']} 100%);"
     return f"""
     <section id="{song['id']}" class="song-section theme-{theme['slug']}" aria-label="{html.escape(song['title'])}" style="--accent: {theme['accent']}; --bg1: {theme['bg1']}; --bg2: {theme['bg2']}; {bg_image_css}">
       <div class="song-overlay"></div>
@@ -357,9 +397,11 @@ def render_song(song: dict) -> str:
 
 
 def build_html(songs: list[dict]) -> str:
-    nav_links = "\n".join(
-        f"<a href='#{song['id']}'>{html.escape(song['title'])}</a>" for song in songs
+    song_items = "\n".join(
+        f"<a href='#{song['id']}' data-index='{i}'>{html.escape(song['title'])}</a>"
+        for i, song in enumerate(songs)
     )
+    first_title = html.escape(songs[0]['title']) if songs else "Songs"
     sections = "\n".join(render_song(song) for song in songs)
     return f"""
 <!DOCTYPE html>
@@ -383,9 +425,14 @@ def build_html(songs: list[dict]) -> str:
     header {{ position: fixed; top: 0; left: 0; right: 0; background: rgba(12, 14, 22, 0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.08); padding: 18px 24px; z-index: 20; }}
     .topbar {{ max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }}
     .topbar h1 {{ margin: 0; font-size: 1.1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9fd7ff; }}
-    .nav-links {{ display: flex; flex-wrap: wrap; gap: 10px; }}
-    .nav-links a {{ color: #f4f4f8; text-decoration: none; font-size: .95rem; padding: 10px 16px; border-radius: 999px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); transition: background .25s, transform .2s, box-shadow .2s; }}
-    .nav-links a:hover {{ background: rgba(255,255,255,.12); transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }}
+    .song-picker {{ position: relative; }}
+    .song-picker-btn {{ display: flex; align-items: center; gap: 8px; color: #f4f4f8; font-size: .95rem; font-weight: 500; padding: 10px 16px; border-radius: 999px; background: rgba(255,255,255,.06); border: none; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); transition: background .2s; }}
+    .song-picker-btn:hover, .song-picker-btn.open {{ background: rgba(255,255,255,.12); }}
+    .song-picker-menu {{ position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(-6px); background: rgba(12,14,22,0.97); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; min-width: 320px; opacity: 0; visibility: hidden; transition: opacity .2s ease, transform .2s ease, visibility .2s; z-index: 100; }}
+    .song-picker-menu.open {{ opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }}
+    .song-picker-menu a {{ color: #f4f4f8; text-decoration: none; font-size: .9rem; padding: 9px 14px; border-radius: 10px; background: rgba(255,255,255,.04); transition: background .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+    .song-picker-menu a:hover {{ background: rgba(255,255,255,.1); }}
+    .song-picker-menu a.active {{ background: rgba(159,215,255,.15); color: #9fd7ff; }}
     main {{ position: relative; width: 100%; height: calc(100vh - 90px); margin-top: 90px; overflow: hidden; }}
     .song-section {{ position: absolute; inset: 0; opacity: 0; pointer-events: none; display: grid; align-items: stretch; justify-items: center; padding: 32px 24px 42px; transition: opacity .45s ease, transform .45s ease; transform: translateY(35px); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; overflow: hidden; }}
     .song-section.active {{ opacity: 1; pointer-events: auto; transform: translateY(0); }}
@@ -414,8 +461,11 @@ def build_html(songs: list[dict]) -> str:
     .info-card-small {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 8px 20px rgba(0,0,0,.15); backdrop-filter: blur(10px); position: relative; }}
     .info-card h2 {{ margin: 0 0 12px; font-size: 0.95rem; color: #e6f1ff; font-weight: 600; }}
     .info-card-small h2 {{ margin: 0 0 8px; font-size: 0.85rem; color: #e6f1ff; font-weight: 600; }}
+    .prog-section {{ margin-bottom: 10px; }}
+    .prog-section:last-child {{ margin-bottom: 0; }}
+    .prog-label {{ font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 5px; }}
     .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
-    .prog-chord {{ font-weight: 700; font-size: 0.9rem; padding: 6px 4px; border-radius: 8px; border: 1px solid; text-align: center; letter-spacing: 0.02em; }}
+    .prog-chord {{ font-weight: 700; font-size: 0.9rem; padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
     .strum-visual {{ display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }}
     .strum-step {{ display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 14px; font-size: 1rem; font-weight: 700; background: rgba(255,255,255,.1); color: #f4f4f8; box-shadow: inset 0 -1px 0 rgba(0,0,0,.2); }}
@@ -431,11 +481,17 @@ def build_html(songs: list[dict]) -> str:
 <body>
   <header id="top">
     <div class="topbar">
-      <div>
-        <h1>Song Book</h1>
-      </div>      <div class="topbar-actions">
-        <button id="auto-scroll-toggle" class="song-button song-toggle-button" type="button">Auto-scroll av</button>
-      </div>      <nav class="nav-links">{nav_links}</nav>
+      <h1>Song Book</h1>
+      <div class="song-picker">
+        <button id="song-picker-btn" class="song-picker-btn" type="button">
+          <span id="song-picker-label">{first_title}</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div id="song-picker-menu" class="song-picker-menu">
+          {song_items}
+        </div>
+      </div>
+      <button id="auto-scroll-toggle" class="song-button song-toggle-button" type="button">Auto-scroll av</button>
     </div>
   </header>
   <main>
@@ -463,6 +519,7 @@ def build_html(songs: list[dict]) -> str:
       const lyricsBox = getLyricsBox(sections[currentIndex]);
       if (lyricsBox) lyricsBox.scrollTop = 0;
       if (autoScrollEnabled) startAutoScroll();
+      updatePickerLabel(index);
     }}
 
     function startAutoScroll() {{
@@ -545,11 +602,36 @@ def build_html(songs: list[dict]) -> str:
       if (event.key === 'ArrowUp' || event.key === 'PageUp') prevSection();
     }});
 
-    document.querySelectorAll('.nav-links a').forEach((link, index) => {{
+    const songPickerBtn = document.getElementById('song-picker-btn');
+    const songPickerMenu = document.getElementById('song-picker-menu');
+    const songPickerLabel = document.getElementById('song-picker-label');
+    const songPickerLinks = Array.from(document.querySelectorAll('.song-picker-menu a'));
+
+    function updatePickerLabel(index) {{
+      if (songPickerLabel && songPickerLinks[index]) {{
+        songPickerLabel.textContent = songPickerLinks[index].textContent;
+      }}
+      songPickerLinks.forEach((l, i) => l.classList.toggle('active', i === index));
+    }}
+
+    songPickerBtn.addEventListener('click', e => {{
+      e.stopPropagation();
+      songPickerMenu.classList.toggle('open');
+      songPickerBtn.classList.toggle('open');
+    }});
+
+    document.addEventListener('click', () => {{
+      songPickerMenu.classList.remove('open');
+      songPickerBtn.classList.remove('open');
+    }});
+
+    songPickerLinks.forEach((link, index) => {{
       link.addEventListener('click', event => {{
         event.preventDefault();
         stopAutoScroll();
         setActive(index);
+        songPickerMenu.classList.remove('open');
+        songPickerBtn.classList.remove('open');
       }});
     }});
 
@@ -558,6 +640,7 @@ def build_html(songs: list[dict]) -> str:
     }}
 
     setActive(0);
+    updatePickerLabel(0);
   </script>
 </body>
 </html>
@@ -565,7 +648,7 @@ def build_html(songs: list[dict]) -> str:
 
 
 if __name__ == "__main__":
-    txt_files = sorted(SONG_DIR.glob("*.txt"), key=lambda p: p.name.lower())
+    txt_files = sorted(SONGS_DIR.glob("*.txt"), key=lambda p: p.name.lower())
     songs = [parse_song(file_path) for file_path in txt_files]
     output_html = build_html(songs)
     OUTPUT_FILE.write_text(output_html, encoding="utf-8")

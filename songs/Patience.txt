@@ -1,20 +1,18 @@
 Patience 
 
 Chord progression:
-Verse 
-C G A D    
-C G A D
+Verse
+| C | G | A | D |
+| C | G | A | D |
 
-Chorus 
-C G C Em   
-C G D D
+Chorus
+| C | G | C  | Em |
+| C | G | D  | D  |
 
-C G C Em   
-C G D D
+| C | G | C  | Em |
+| C | G | D  | D  |
 
-D D D D
-D D D D
-D D D D
+| D | D | D  | D  |
 
 Lyrics:
 [Intro]
