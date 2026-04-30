@@ -1,5 +1,6 @@
-
 You are my Sunshine
+BPM: 80
+Strumming: R - D - - U D U
 
 Chord progression:
 | A   | A   | D   | A   |

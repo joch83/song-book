@@ -1,5 +1,6 @@
 Hey Joe
-
+BPM: 96
+Strumming: D R D R
 
 Chord progression:
 | C G| D A| 
@@ -57,37 +58,37 @@ C G D A E E
  
 [Verse 3]
 C    G
-   Hey Joe
+Hey Joe
 D A                    E                               E
-   Where you gonna run to now, where you gonna run to?
+Where you gonna run to now, where you gonna run to?
 C    G
- Hey Joe, I said
+Hey Joe, I said
 D A                E                               E
-   Where you gonna run to now, where you gonna go?
+Where you gonna run to now, where you gonna go?
 C          G
- I’m goin’ way down south,
+I’m goin’ way down south,
 D A            E          E
-   Way down to Mexico way.
+Way down to Mexico way.
 C          G
- I’m goin’ way down south,
+I’m goin’ way down south,
 D A         E
-   Way down where I can be free,
+Way down where I can be free,
       E
 Ain’t no one gonna find me.
  
  
 [Outro]
 C         G
- Ain’t no hangman gonna,
+Ain’t no hangman gonna,
 D                     A           E
- He ain’t gonna put a rope around me,
+He ain’t gonna put a rope around me,
                       E
 You better believe it right now,
  
 I gotta go now,
 C     G
-  Hey Joe,
+Hey Joe,
 D            A      E
-  You better run on down
+You better run on down
                   E
 Goodbye everybody. Ow!

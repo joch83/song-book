@@ -45,17 +45,17 @@ CHORD_COLORS = {
 }
 
 def get_chord_color(chord: str) -> str:
-    """Get consistent color for a chord."""
-    # Try exact match first
     if chord in CHORD_COLORS:
         return CHORD_COLORS[chord]
-    
-    # Try without slashes (for chords like Am/E)
     base_chord = chord.split("/")[0]
     if base_chord in CHORD_COLORS:
         return CHORD_COLORS[base_chord]
-    
-    # Default color if not found
+    # Strip modifiers (sus2, sus4, maj7, add9, etc.) and try root note
+    match = re.match(r'^([A-Ga-g][#b]?)', base_chord)
+    if match:
+        root = match.group(1)[0].upper() + match.group(1)[1:]
+        if root in CHORD_COLORS:
+            return CHORD_COLORS[root]
     return "#8BD3FF"
 
 DEFAULT_STRUMMING = {
@@ -144,25 +144,22 @@ THEMES = {
 
 
 def render_strumming_visual(pattern: str) -> str:
-    tokens = pattern.replace("(", "").replace(")", "").split()
+    tokens = pattern.split()
     icons = []
-    i = 0
-    while i < len(tokens):
-        token = tokens[i]
-        lower = token.lower()
-        next_token = tokens[i + 1].lower() if i + 1 < len(tokens) else ""
-        if lower.startswith("down"):
+    for token in tokens:
+        t = token.upper()
+        if t == 'D':
             icons.append('<span class="strum-step strum-down">↓</span>')
-        elif lower.startswith("up"):
+        elif t == 'U':
             icons.append('<span class="strum-step strum-up">↑</span>')
-        elif lower == "root" and next_token == "note":
-            icons.append('<span class="strum-step strum-root">R</span>')
-            i += 1
-        elif "root" in lower:
-            icons.append('<span class="strum-step strum-root">R</span>')
+        elif t == 'R':
+            icons.append('<span class="strum-step strum-root"><span class="strum-root-arrow">↓</span></span>')
+        elif t == 'A':
+            icons.append('<span class="strum-step strum-alt"><span class="strum-root-arrow">↓</span></span>')
+        elif t == '-':
+            icons.append('<span class="strum-step strum-mute"></span>')
         else:
-            icons.append(f'<span class="strum-step">{html.escape(token)}</span>')
-        i += 1
+            icons.append('<span class="strum-step strum-down">↓</span>')
     return "".join(icons)
 
 
@@ -181,7 +178,7 @@ def is_chord_line(line: str) -> bool:
     # - Start with A-G (uppercase or lowercase)
     # - Followed only by valid chord characters (m, digits, b, #, /)
     valid_chord_starts = set("ABCDEFGabcdefg")
-    valid_chord_chars = set("ABCDEFGabcdefgm0123456789b#/")
+    valid_chord_chars = set("ABCDEFGabcdefgm0123456789b#/suj")
     
     for token in tokens:
         if not token:
@@ -193,7 +190,7 @@ def is_chord_line(line: str) -> bool:
         if not all(c in valid_chord_chars for c in token):
             return False
         # Max length for a chord (e.g., "Cmaj7sus4#/E" is very long)
-        if len(token) > 8:
+        if len(token) > 10:
             return False
     
     return True
@@ -262,9 +259,19 @@ def parse_song(file_path: Path) -> dict:
     lyrics_lines = []
     in_prog = False
     in_lyrics = False
+    file_bpm = None
+    file_strumming = None
 
     for line in lines:
         low = line.strip().lower()
+        if low.startswith("bpm:"):
+            val = line.strip()[4:].strip()
+            if val.isdigit():
+                file_bpm = int(val)
+            continue
+        if low.startswith("strumming:"):
+            file_strumming = line.strip()[10:].strip()
+            continue
         if low.startswith("chord progression"):
             in_prog = True
             in_lyrics = False
@@ -292,7 +299,9 @@ def parse_song(file_path: Path) -> dict:
         "title": title,
         "chord_progression": prog_lines,
         "lyrics": lyrics_lines,
-        "strumming": DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down")
+        "file_bpm": file_bpm,
+        "file_strumming": file_strumming,
+        "strumming": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down")
     }
 
 
@@ -332,7 +341,7 @@ def render_chord_progression(prog_lines: list[str]) -> str:
                 f'<span style="color:{get_chord_color(c)};">{html.escape(c)}</span>'
                 for c in chords
             )
-            style = 'border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.07);'
+            style = 'border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.07);white-space:nowrap;font-size:0.88rem;'
         return f'<span class="prog-chord" style="{style}">{inner}</span>'
 
     parts = []
@@ -351,7 +360,7 @@ def render_song(song: dict) -> str:
     chords_html = render_chord_progression(song["chord_progression"])
     lyrics_html = render_lyrics_with_chords(song["lyrics"])
     strum_visual = render_strumming_visual(song["strumming"])
-    bpm = theme.get("bpm", 120)
+    bpm = song.get("file_bpm") or theme.get("bpm", 100)
     if theme['bgImage'] and theme['bgImage'] != 'none':
         bg_image_css = f"background-image: url('data:image/png;base64,{theme['bgImage']}');"
     else:
@@ -359,14 +368,10 @@ def render_song(song: dict) -> str:
     return f"""
     <section id="{song['id']}" class="song-section theme-{theme['slug']}" aria-label="{html.escape(song['title'])}" style="--accent: {theme['accent']}; --bg1: {theme['bg1']}; --bg2: {theme['bg2']}; {bg_image_css}">
       <div class="song-overlay"></div>
+      <div class="song-title-block">
+        <h1>{html.escape(song['title'])}</h1>
+      </div>
       <div class="song-frame">
-        <div class="song-header">
-          <div>
-            <p class="song-supertitle">{html.escape(theme['label'])}</p>
-            <h1>{html.escape(song['title'])}</h1>
-            <p class="song-note">{html.escape(theme['note'])}</p>
-          </div>
-        </div>
         <div class="song-grid">
           <aside class="song-meta-left">
             <div class="info-card info-card-small">
@@ -382,12 +387,11 @@ def render_song(song: dict) -> str:
           <aside class="song-meta-right">
             <div class="info-card info-card-small">
               <h2>Strumming pattern</h2>
-              <div class="strumming">{html.escape(song['strumming'])}</div>
               <div class="strum-visual">{strum_visual}</div>
             </div>
             <div class="info-card info-card-small">
               <h2>Tempo</h2>
-              <div class="tempo-display">{bpm} BPM</div>
+              <button class="tempo-display" data-bpm="{bpm}" type="button">{bpm} <span class="tempo-unit">BPM</span></button>
             </div>
           </aside>
         </div>
@@ -421,7 +425,6 @@ def build_html(songs: list[dict]) -> str:
     }}
     * {{ box-sizing: border-box; }}
     html, body {{ margin: 0; padding: 0; height: 100%; overflow: hidden; }}
-    body {{ scroll-behavior: smooth; }}
     header {{ position: fixed; top: 0; left: 0; right: 0; background: rgba(12, 14, 22, 0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.08); padding: 18px 24px; z-index: 20; }}
     .topbar {{ max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }}
     .topbar h1 {{ margin: 0; font-size: 1.1rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9fd7ff; }}
@@ -433,29 +436,30 @@ def build_html(songs: list[dict]) -> str:
     .song-picker-menu a {{ color: #f4f4f8; text-decoration: none; font-size: .9rem; padding: 9px 14px; border-radius: 10px; background: rgba(255,255,255,.04); transition: background .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
     .song-picker-menu a:hover {{ background: rgba(255,255,255,.1); }}
     .song-picker-menu a.active {{ background: rgba(159,215,255,.15); color: #9fd7ff; }}
-    main {{ position: relative; width: 100%; height: calc(100vh - 90px); margin-top: 90px; overflow: hidden; }}
-    .song-section {{ position: absolute; inset: 0; opacity: 0; pointer-events: none; display: grid; align-items: stretch; justify-items: center; padding: 32px 24px 42px; transition: opacity .45s ease, transform .45s ease; transform: translateY(35px); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; overflow: hidden; }}
-    .song-section.active {{ opacity: 1; pointer-events: auto; transform: translateY(0); }}
+    main {{ width: 100%; height: calc(100vh - 90px); margin-top: 90px; }}
+    .song-section {{ position: relative; display: none; align-items: stretch; justify-items: center; padding: 4px 24px 24px; background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; overflow: hidden; height: 100%; }}
+    .song-section.active {{ display: grid; animation: fadeIn .3s ease; }}
+    @keyframes fadeIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
     .song-section::before {{ content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); opacity: 0.6; z-index: 0; }}
     .song-section::after {{ content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(8,18,31,0.68), rgba(29,43,69,0.68)); z-index: 1; pointer-events: none; }}
     .song-overlay {{ position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 28%), radial-gradient(circle at bottom left, rgba(255,255,255,.04), transparent 30%); pointer-events: none; z-index: 2; }}
-    .song-frame {{ position: relative; width: min(1180px, 100%); max-height: 100%; height: 100%; display: grid; grid-template-rows: auto 1fr; gap: 24px; z-index: 3; }}
-    .song-header {{ display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; align-items: start; margin-bottom: 8px; }}
-    .topbar-actions {{ display: flex; align-items: center; gap: 20px; order: -1; }}
+    .song-frame {{ position: relative; width: min(1360px, 100%); height: 100%; z-index: 3; }}
     .song-button.song-toggle-button {{ background: rgba(255,255,255,.04); color: #c8d9e8; border: 1px solid rgba(255,255,255,.1); padding: 8px 14px; font-size: 0.85rem; font-weight: 500; transition: all .25s ease; }}
     .song-button.song-toggle-button:hover {{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #e8f0f8; }}
-    .song-supertitle {{ margin: 0 0 8px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.9rem; }}
-    .song-note {{ margin: 10px 0 0; color: rgba(244,244,248,.72); max-width: 640px; }}
-    .song-header h1 {{ margin: 0; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; }}
+    .song-title-block {{ position: absolute; top: 4px; left: 24px; z-index: 4; max-width: 420px; overflow: hidden; }}
+    .song-supertitle {{ margin: 0 0 2px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.8rem; }}
+    .song-title-block h1 {{ margin: 0; font-size: clamp(1.4rem, 2vw, 2.2rem); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+    .song-note {{ margin: 4px 0 0; color: rgba(244,244,248,.6); font-size: 0.85rem; }}
     .song-button {{ padding: 12px 18px; background: var(--accent); color: #09101d; border-radius: 999px; text-decoration: none; font-weight: 700; box-shadow: 0 18px 45px rgba(0,0,0,.18); }}
-    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 0.45fr 1.8fr 0.45fr; align-items: stretch; height: 100%; min-height: 0; }}
-    .song-main {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 34px; padding: 34px; box-shadow: 0 32px 80px rgba(0,0,0,.18); backdrop-filter: blur(14px); display: flex; flex-direction: column; min-height: 0; height: 100%; max-height: 100%; overflow: hidden; }}
+    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 242px 1fr 181px; height: 100%; min-height: 0; align-items: stretch; }}
+    .song-main {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 34px; padding: 34px; box-shadow: 0 32px 80px rgba(0,0,0,.18); backdrop-filter: blur(14px); display: flex; flex-direction: column; min-height: 0; height: 100%; max-height: 100%; overflow: hidden; margin-left: -12px; margin-right: -12px; }}
     .lyrics-box {{ flex: 1 1 0; min-height: 0; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.5) transparent; overscroll-behavior: contain; }}
     .lyrics-box pre {{ margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 1.02rem; line-height: 1.78; color: #f4f4f8; }}
-    .song-meta-left, .song-meta-right {{ position: sticky; top: 120px; align-self: start; }}
+    .song-meta-left {{ position: relative; display: grid; gap: 12px; min-width: 0; align-self: start; margin-top: 110px; }}
+    .song-meta-right {{ position: relative; display: grid; gap: 12px; align-self: start; }}
     .chord {{ font-weight: 700; padding: 2px 0; margin: 0 2px; }}
     .song-button.song-toggle-button.active {{ background: rgba(139, 211, 255, .2); color: #8bd3ff; border-color: rgba(139, 211, 255, .4); }}
-    .song-meta-left {{ position: relative; display: grid; gap: 12px; }}
+    .song-meta-left {{ position: relative; display: grid; gap: 12px; min-width: 0; }}
     .song-meta-right {{ position: relative; display: grid; gap: 12px; }}
     .info-card {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 20px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 60px rgba(0,0,0,.2); backdrop-filter: blur(10px); position: relative; }}
     .info-card-small {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 8px 20px rgba(0,0,0,.15); backdrop-filter: blur(10px); position: relative; }}
@@ -465,14 +469,22 @@ def build_html(songs: list[dict]) -> str:
     .prog-section:last-child {{ margin-bottom: 0; }}
     .prog-label {{ font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 5px; }}
     .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
-    .prog-chord {{ font-weight: 700; font-size: 0.9rem; padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
+    .prog-chord {{ font-weight: 700; font-size: 1.0rem; padding: 8px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
-    .strum-visual {{ display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }}
-    .strum-step {{ display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; border-radius: 14px; font-size: 1rem; font-weight: 700; background: rgba(255,255,255,.1); color: #f4f4f8; box-shadow: inset 0 -1px 0 rgba(0,0,0,.2); }}
-    .strum-down {{ background: rgba(60, 130, 255, .22); }}
-    .strum-up {{ background: rgba(116, 188, 255, .18); }}
-    .strum-root {{ background: rgba(255, 206, 86, .24); color: #fff3b2; }}
-    .tempo-display {{ font-size: 1.4rem; font-weight: 700; color: var(--accent); text-align: center; padding: 8px; }}
+    .strum-visual {{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }}
+    .strum-step {{ display: inline-flex; width: 100%; aspect-ratio: 1; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #f4f4f8; }}
+    .strum-down {{ background: rgba(60, 130, 255, .25); border-color: rgba(60,130,255,.3); }}
+    .strum-up {{ background: rgba(116, 188, 255, .2); border-color: rgba(116,188,255,.25); }}
+    .strum-root {{ background: rgba(255, 206, 86, .22); border-color: rgba(255,206,86,.3); color: #fff3b2; }}
+    .strum-alt {{ background: rgba(255, 150, 50, .25); border-color: rgba(255,150,50,.35); color: #ffd4a0; }}
+    .strum-root-arrow {{ font-size: 0.7rem; }}
+    .strum-mute {{ background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.06); }}
+    .tempo-display {{ font-size: 1.4rem; font-weight: 700; color: var(--accent); text-align: center; padding: 10px 8px; background: none; border: 1px solid transparent; border-radius: 12px; cursor: pointer; width: 100%; transition: border-color .2s, background .2s; }}
+    .tempo-display:hover {{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }}
+    .tempo-display.active {{ background: rgba(255,255,255,.06); border-color: var(--accent); }}
+    .tempo-unit {{ font-size: 0.85rem; font-weight: 500; opacity: 0.7; }}
+    @keyframes metroPulse {{ 0% {{ transform: scale(1); opacity: 1; }} 8% {{ transform: scale(1.18); opacity: 1; }} 30% {{ transform: scale(1); opacity: 1; }} 100% {{ transform: scale(1); opacity: 1; }} }}
+    .tempo-display.beat {{ animation: metroPulse calc(var(--beat-ms) * 1ms) linear; }}
     .song-footer {{ display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b3c4d5; }}
     .song-footer span {{ font-size: 0.95rem; }}
     @keyframes floatNote {{ 0%, 100% {{ transform: translateY(0px) rotate(0deg); opacity: 0.1; }} 50% {{ transform: translateY(-30px) rotate(180deg); opacity: 0.2; }} }}
@@ -498,43 +510,35 @@ def build_html(songs: list[dict]) -> str:
     {sections}
   </main>
   <script>
-    const sections = Array.from(document.querySelectorAll('.song-section'));
+    const songSections = Array.from(document.querySelectorAll('.song-section'));
     let currentIndex = 0;
-    let isLocked = false;
     let autoScrollEnabled = false;
     let autoScrollAnimationFrame = null;
-    const autoScrollSpeed = 0.04;
+    const autoScrollSpeed = 0.03;
     let autoScrollAccum = 0;
     const autoScrollToggle = document.getElementById('auto-scroll-toggle');
 
-    function getLyricsBox(section) {{
-      return section.querySelector('.lyrics-box');
+    function getLyricsBox() {{
+      return songSections[currentIndex]?.querySelector('.lyrics-box') || null;
     }}
 
     function setActive(index) {{
-      if (index < 0 || index >= sections.length) return;
-      sections[currentIndex].classList.remove('active');
+      if (index < 0 || index >= songSections.length) return;
+      songSections[currentIndex].classList.remove('active');
       currentIndex = index;
-      sections[currentIndex].classList.add('active');
-      const lyricsBox = getLyricsBox(sections[currentIndex]);
+      songSections[currentIndex].classList.add('active');
+      const lyricsBox = getLyricsBox();
       if (lyricsBox) lyricsBox.scrollTop = 0;
-      if (autoScrollEnabled) startAutoScroll();
+      if (autoScrollEnabled) startAutoScroll(); else stopAutoScroll();
       updatePickerLabel(index);
     }}
 
     function startAutoScroll() {{
       stopAutoScroll();
       autoScrollAccum = 0;
-      const lyricsBox = getLyricsBox(sections[currentIndex]);
-      if (!lyricsBox) return;
-
       const performScroll = () => {{
-        const box = getLyricsBox(sections[currentIndex]);
-        if (!box || !autoScrollEnabled) {{
-          stopAutoScroll();
-          return;
-        }}
-
+        const box = getLyricsBox();
+        if (!box || !autoScrollEnabled) {{ stopAutoScroll(); return; }}
         if (box.scrollTop + box.clientHeight >= box.scrollHeight - 2) {{
           stopAutoScroll();
           autoScrollEnabled = false;
@@ -542,7 +546,6 @@ def build_html(songs: list[dict]) -> str:
           autoScrollToggle.classList.remove('active');
           return;
         }}
-
         autoScrollAccum += autoScrollSpeed;
         if (autoScrollAccum >= 1) {{
           const delta = Math.floor(autoScrollAccum);
@@ -551,7 +554,6 @@ def build_html(songs: list[dict]) -> str:
         }}
         autoScrollAnimationFrame = requestAnimationFrame(performScroll);
       }};
-
       autoScrollAnimationFrame = requestAnimationFrame(performScroll);
     }}
 
@@ -567,40 +569,13 @@ def build_html(songs: list[dict]) -> str:
       autoScrollToggle.textContent = autoScrollEnabled ? 'Auto-scroll på' : 'Auto-scroll av';
       autoScrollToggle.classList.toggle('active', autoScrollEnabled);
       if (autoScrollEnabled) {{
-        const lyricsBox = getLyricsBox(sections[currentIndex]);
+        const lyricsBox = getLyricsBox();
         if (lyricsBox) lyricsBox.scrollTop = 0;
         startAutoScroll();
       }} else {{
         stopAutoScroll();
       }}
     }}
-
-    function nextSection() {{
-      if (isLocked || currentIndex >= sections.length - 1) return;
-      isLocked = true;
-      stopAutoScroll();
-      setActive(currentIndex + 1);
-      window.setTimeout(() => isLocked = false, 600);
-    }}
-
-    function prevSection() {{
-      if (isLocked || currentIndex <= 0) return;
-      isLocked = true;
-      stopAutoScroll();
-      setActive(currentIndex - 1);
-      window.setTimeout(() => isLocked = false, 600);
-    }}
-
-    document.addEventListener('wheel', event => {{
-      if (event.target.closest('.lyrics-box')) return;
-      if (event.deltaY > 10) nextSection();
-      else if (event.deltaY < -10) prevSection();
-    }}, {{ passive: true }});
-
-    document.addEventListener('keydown', event => {{
-      if (event.key === 'ArrowDown' || event.key === 'PageDown') nextSection();
-      if (event.key === 'ArrowUp' || event.key === 'PageUp') prevSection();
-    }});
 
     const songPickerBtn = document.getElementById('song-picker-btn');
     const songPickerMenu = document.getElementById('song-picker-menu');
@@ -638,6 +613,42 @@ def build_html(songs: list[dict]) -> str:
     if (autoScrollToggle) {{
       autoScrollToggle.addEventListener('click', toggleAutoScroll);
     }}
+
+    let metroInterval = null;
+
+    function stopMetronome() {{
+      if (metroInterval) {{ clearInterval(metroInterval); metroInterval = null; }}
+      document.querySelectorAll('.tempo-display.active').forEach(b => {{
+        b.classList.remove('active');
+        b.style.removeProperty('--beat-ms');
+      }});
+    }}
+
+    function startMetronome(btn) {{
+      stopMetronome();
+      const bpm = parseInt(btn.dataset.bpm, 10);
+      const ms = Math.round(60000 / bpm);
+      btn.style.setProperty('--beat-ms', ms);
+      btn.classList.add('active');
+      const pulse = () => {{
+        btn.classList.remove('beat');
+        void btn.offsetWidth;
+        btn.classList.add('beat');
+      }};
+      pulse();
+      metroInterval = setInterval(pulse, ms);
+    }}
+
+    document.querySelectorAll('.tempo-display').forEach(btn => {{
+      btn.addEventListener('click', e => {{
+        e.stopPropagation();
+        if (btn.classList.contains('active')) {{
+          stopMetronome();
+        }} else {{
+          startMetronome(btn);
+        }}
+      }});
+    }});
 
     setActive(0);
     updatePickerLabel(0);
