@@ -2,6 +2,7 @@ import html
 import base64
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 SONG_DIR = Path(__file__).parent
 SONGS_DIR = SONG_DIR / "songs"
@@ -293,6 +294,8 @@ def parse_song(file_path: Path) -> dict:
     if not lyrics_lines:
         lyrics_lines = ["(Ingen lyrics hittad i filen)"]
 
+    pdf_files = sorted(SONGS_DIR.glob(f"{title}*.pdf"))
+
     song_id = file_path.stem.replace(" ", "-").replace("(", "").replace(")", "").lower()
     return {
         "id": song_id,
@@ -301,7 +304,8 @@ def parse_song(file_path: Path) -> dict:
         "lyrics": lyrics_lines,
         "file_bpm": file_bpm,
         "file_strumming": file_strumming,
-        "strumming": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down")
+        "strumming": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down"),
+        "pdf_tabs": [p.name for p in pdf_files],
     }
 
 
@@ -361,6 +365,27 @@ def render_song(song: dict) -> str:
     lyrics_html = render_lyrics_with_chords(song["lyrics"])
     strum_visual = render_strumming_visual(song["strumming"])
     bpm = song.get("file_bpm") or theme.get("bpm", 100)
+
+    pdf_buttons_html = ""
+    pdf_overlays_html = ""
+    for pdf_name in song.get("pdf_tabs", []):
+        label = pdf_name[len(song['title']):].strip().removesuffix('.pdf').strip() or "Tab"
+        pdf_id = f"pdf-{song['id']}-{re.sub(r'[^a-z0-9]', '-', pdf_name.lower())}"
+        pdf_path = quote(f"songs/{pdf_name}")
+        pdf_buttons_html += f'''
+            <div class="info-card info-card-small">
+              <h2>Tab / Riff</h2>
+              <button class="pdf-open-btn" data-pdf-id="{pdf_id}">{html.escape(label)}</button>
+            </div>'''
+        pdf_overlays_html += f'''
+      <div class="pdf-overlay" id="{pdf_id}" style="display:none">
+        <div class="pdf-modal">
+          <button class="pdf-close-btn" data-pdf-id="{pdf_id}">✕</button>
+          <div class="pdf-viewport">
+            <embed src="{pdf_path}#zoom=100" type="application/pdf" width="100%" height="100%">
+          </div>
+        </div>
+      </div>'''
     if theme['bgImage'] and theme['bgImage'] != 'none':
         bg_image_css = f"background-image: url('data:image/png;base64,{theme['bgImage']}');"
     else:
@@ -393,9 +418,11 @@ def render_song(song: dict) -> str:
               <h2>Tempo</h2>
               <button class="tempo-display" data-bpm="{bpm}" type="button">{bpm} <span class="tempo-unit">BPM</span></button>
             </div>
+            {pdf_buttons_html}
           </aside>
         </div>
       </div>
+      {pdf_overlays_html}
     </section>
     """
 
@@ -483,6 +510,13 @@ def build_html(songs: list[dict]) -> str:
     .tempo-display:hover {{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }}
     .tempo-display.active {{ background: rgba(255,255,255,.06); border-color: var(--accent); }}
     .tempo-unit {{ font-size: 0.85rem; font-weight: 500; opacity: 0.7; }}
+    .pdf-open-btn {{ width: 100%; padding: 8px 10px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; color: #e6f1ff; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s; }}
+    .pdf-open-btn:hover {{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); }}
+    .pdf-overlay {{ position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); padding: 20px; }}
+    .pdf-modal {{ position: relative; width: 100%; height: 100%; max-width: 900px; max-height: calc(100% - 40px); background: #1a1a2e; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.15); }}
+    .pdf-viewport {{ position: absolute; inset: 0; overflow: hidden; }}
+    .pdf-viewport embed {{ position: absolute; top: -150px; left: 0; width: 100%; height: calc(100% + 150px); }}
+    .pdf-close-btn {{ position: absolute; top: 10px; right: 12px; z-index: 21; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; font-size: 1rem; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }}
     @keyframes metroPulse {{ 0% {{ transform: scale(1); opacity: 1; }} 8% {{ transform: scale(1.18); opacity: 1; }} 30% {{ transform: scale(1); opacity: 1; }} 100% {{ transform: scale(1); opacity: 1; }} }}
     .tempo-display.beat {{ animation: metroPulse calc(var(--beat-ms) * 1ms) linear; }}
     .song-footer {{ display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b3c4d5; }}
@@ -652,6 +686,26 @@ def build_html(songs: list[dict]) -> str:
 
     setActive(0);
     updatePickerLabel(0);
+
+    document.querySelectorAll('.pdf-open-btn').forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        const overlay = document.getElementById(btn.dataset.pdfId);
+        if (overlay) overlay.style.display = 'flex';
+      }});
+    }});
+
+    document.querySelectorAll('.pdf-close-btn').forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        const overlay = document.getElementById(btn.dataset.pdfId);
+        if (overlay) overlay.style.display = 'none';
+      }});
+    }});
+
+    document.querySelectorAll('.pdf-overlay').forEach(overlay => {{
+      overlay.addEventListener('click', e => {{
+        if (e.target === overlay) overlay.style.display = 'none';
+      }});
+    }});
   </script>
 </body>
 </html>

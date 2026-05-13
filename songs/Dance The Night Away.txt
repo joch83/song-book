@@ -1,61 +1,93 @@
-You are my Sunshine
-BPM: 80
-Strumming: R - D - - U D U
+Dance The Night Away
+BPM: 
+Strumming: d U D U D U D U
 
 Chord progression:
-| A   | A   | D   | A   |
-| D   | A   | A E | A
+| D | A | D | A |
+| D | A | D | A |
+| D | A | D | A |
 
 Lyrics:
-[Verse 1]
+
+[Intro]
+  D   A   D   A  
+  D   A   D   A  
+  D   A   D   A  
  
-          A
-The other night dear as I lay sleeping
-            D              A
-I dreamed I held you in my arms
-        D                  A
-When I awoke dear I was mistaken
-     A        E          A
-So I bowed my head and I cried
- 
+[Verse]
+D               A         D   A
+  Here comes my happiness again
+D               A                   D   A
+  right back to where it should have been,
+D                  A            D   A
+  'cause now she's gone and I am free,
+D               A            D   A
+  and she can't do a thing to me.
  
 [Chorus]
+D                A               D   A
+  I just want to dance the night away
+D           A            D      A
+  with senorita's who can sway.
+D              A              D      A
+  Right now tomorrow's looking bright
+D               A            D      A
+  just like the sunny morning light.
+
+[Bridge]
+
+   D             A      D              A            D   A          
+And if you should see her please let her know that I'm well as you can 
+D     A
+tell.
+    D             A            D            A             D  A       D  
+And if she should tell you that she wants me back, tell her no, I gotta go.
+ A
  
-           A
-You are my sunshine, my only sunshine
-            D                    A
-You make me happy when skies are gray
-             D                     A
-You'll never know dear, how much I love you
-             A       E         A
-Please don't take my sunshine away
- 
+[Chorus]
+D                A               D   A
+  I just want to dance the night away
+D           A            D      A
+  with senorita's who can sway.
+D              A              D      A
+  Right now tomorrow's looking bright
+D               A            D      A
+  just like the sunny morning light.
  
 [Instrumental]
- 
-| A   | A   | D   | A   |
-| D   | A   | A E | A
- 
- 
-[Verse 2]
- 
-            A
-I've always loved you and made you happy
-            D                  A
-and nothing else could come between
-               D                 A
-but now you've left me to love another
-         A           E       A
-you have shattered all of my dreams
- 
+  D   A   D   A  
+  D   A   D   A  
+
+[Bridge]
+    D             A      D              A            D   A          
+And if you should see her please let her know that I'm well as you can 
+D     A
+tell.
+    D             A            D            A             D  A       D  
+And if she should tell you that she wants me back, tell her no, I gotta go.
+ A
  
 [Chorus]
+
+D                A               D   A
+  I just want to dance the night away
+D           A            D      A
+  with senorita's who can sway.
+D              A              D      A
+  Right now tomorrow's looking bright
+D               A            D      A
+  just like the sunny morning light.
  
-           A
-You are my sunshine, my only sunshine
-            D                    A
-You make me happy when skies are gray
-             D                     A
-You'll never know dear, how much I love you
-             A       E          A  
-Please don't take my sunshine away
+D                A               D   A
+  I just want to dance the night away
+D           A            D      A
+  with senorita's who can sway.
+D              A              D      A
+  Right now tomorrow's looking bright
+D               A            D      A
+  just like the sunny morning light.
+ 
+[Outro]
+  D   A   D   A  
+  D   A   D   A  
+  D   A   D   D  
