@@ -1,0 +1,5 @@
+# Binärfiler – Git ska inte modifiera dessa
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
