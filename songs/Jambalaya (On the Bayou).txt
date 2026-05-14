@@ -1,6 +1,8 @@
 Jambalaya (On the Bayou)
 BPM: 140
-Strumming: R D A D
+Strumming: R - D - A - D -
+
+Spotify: https://open.spotify.com/track/2KJOfVTxWkbtRMGByeEQ7V?si=585c578c26a846ee
 
 Chord progression:
 | C   | C   | G  | G |
@@ -9,7 +11,7 @@ Chord progression:
 
 Lyrics:
 [Intro]
-| G  | G  | C   | C
+| G  | G  | C  | C  |
  
 [Verse 1]
         C                       G

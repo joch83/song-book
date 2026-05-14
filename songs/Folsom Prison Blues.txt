@@ -2,6 +2,8 @@ Folsom Prison Blues
 BPM: 120
 Strumming: R - D U A - D U
 
+Spotify: https://open.spotify.com/track/0LTSNmOLBt25GMjHlxp9OR?si=6767f6c8c12c4ebe
+
 Chord progression:
 | E  | E   | E   | E   |
 | A  | A  | E   | E   |

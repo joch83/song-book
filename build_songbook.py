@@ -161,7 +161,8 @@ def render_strumming_visual(pattern: str) -> str:
             icons.append('<span class="strum-step strum-mute"></span>')
         else:
             icons.append('<span class="strum-step strum-down">↓</span>')
-    return "".join(icons)
+    cols = len(tokens)
+    return f'<div class="strum-visual" style="grid-template-columns: repeat({cols}, 1fr)">{"".join(icons)}</div>'
 
 
 def is_chord_line(line: str) -> bool:
@@ -262,6 +263,7 @@ def parse_song(file_path: Path) -> dict:
     in_lyrics = False
     file_bpm = None
     file_strumming = None
+    spotify_url = None
 
     for line in lines:
         low = line.strip().lower()
@@ -272,6 +274,9 @@ def parse_song(file_path: Path) -> dict:
             continue
         if low.startswith("strumming:"):
             file_strumming = line.strip()[10:].strip()
+            continue
+        if low.startswith("spotify:"):
+            spotify_url = line.strip()[8:].strip()
             continue
         if low.startswith("chord progression"):
             in_prog = True
@@ -306,6 +311,7 @@ def parse_song(file_path: Path) -> dict:
         "file_strumming": file_strumming,
         "strumming": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down"),
         "pdf_tabs": [p.name for p in pdf_files],
+        "spotify_url": spotify_url,
     }
 
 
@@ -366,6 +372,14 @@ def render_song(song: dict) -> str:
     strum_visual = render_strumming_visual(song["strumming"])
     bpm = song.get("file_bpm") or theme.get("bpm", 100)
 
+    spotify_html = ""
+    if song.get("spotify_url"):
+        embed_url = song["spotify_url"].replace("open.spotify.com/", "open.spotify.com/embed/")
+        spotify_html = f'''
+            <div class="spotify-card">
+              <iframe src="{embed_url}?utm_source=generator&theme=0" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>'''
+
     pdf_buttons_html = ""
     pdf_overlays_html = ""
     for pdf_name in song.get("pdf_tabs", []):
@@ -412,12 +426,12 @@ def render_song(song: dict) -> str:
           <aside class="song-meta-right">
             <div class="info-card info-card-small">
               <h2>Strumming pattern</h2>
-              <div class="strum-visual">{strum_visual}</div>
+              {strum_visual}
             </div>
             <div class="info-card info-card-small">
-              <h2>Tempo</h2>
               <button class="tempo-display" data-bpm="{bpm}" type="button">{bpm} <span class="tempo-unit">BPM</span></button>
             </div>
+            {spotify_html}
             {pdf_buttons_html}
           </aside>
         </div>
@@ -473,13 +487,13 @@ def build_html(songs: list[dict]) -> str:
     .song-frame {{ position: relative; width: min(1360px, 100%); height: 100%; z-index: 3; }}
     .song-button.song-toggle-button {{ background: rgba(255,255,255,.04); color: #c8d9e8; border: 1px solid rgba(255,255,255,.1); padding: 8px 14px; font-size: 0.85rem; font-weight: 500; transition: all .25s ease; }}
     .song-button.song-toggle-button:hover {{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #e8f0f8; }}
-    .song-title-block {{ position: absolute; top: 4px; left: 24px; z-index: 4; max-width: 420px; overflow: hidden; }}
+    .song-title-block {{ position: absolute; top: 4px; left: 24px; z-index: 4; max-width: 380px; }}
     .song-supertitle {{ margin: 0 0 2px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.8rem; }}
-    .song-title-block h1 {{ margin: 0; font-size: clamp(1.4rem, 2vw, 2.2rem); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+    .song-title-block h1 {{ margin: 0; font-size: clamp(1.4rem, 2vw, 2.2rem); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
     .song-note {{ margin: 4px 0 0; color: rgba(244,244,248,.6); font-size: 0.85rem; }}
     .song-button {{ padding: 12px 18px; background: var(--accent); color: #09101d; border-radius: 999px; text-decoration: none; font-weight: 700; box-shadow: 0 18px 45px rgba(0,0,0,.18); }}
-    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 242px 1fr 181px; height: 100%; min-height: 0; align-items: stretch; }}
-    .song-main {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 34px; padding: 34px; box-shadow: 0 32px 80px rgba(0,0,0,.18); backdrop-filter: blur(14px); display: flex; flex-direction: column; min-height: 0; height: 100%; max-height: 100%; overflow: hidden; margin-left: -12px; margin-right: -12px; }}
+    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 242px 1fr 210px; height: 100%; min-height: 0; align-items: stretch; }}
+    .song-main {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 34px; padding: 34px; box-shadow: 0 32px 80px rgba(0,0,0,.18); backdrop-filter: blur(14px); display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; max-height: 100%; overflow: hidden; margin-left: -12px; margin-right: -12px; }}
     .lyrics-box {{ flex: 1 1 0; min-height: 0; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.5) transparent; overscroll-behavior: contain; }}
     .lyrics-box pre {{ margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 1.02rem; line-height: 1.78; color: #f4f4f8; }}
     .song-meta-left {{ position: relative; display: grid; gap: 12px; min-width: 0; align-self: start; margin-top: 110px; }}
@@ -498,15 +512,15 @@ def build_html(songs: list[dict]) -> str:
     .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
     .prog-chord {{ font-weight: 700; font-size: 1.0rem; padding: 8px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
-    .strum-visual {{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }}
-    .strum-step {{ display: inline-flex; width: 100%; aspect-ratio: 1; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #f4f4f8; }}
+    .strum-visual {{ display: grid; gap: 6px; }}
+    .strum-step {{ display: inline-flex; width: 100%; aspect-ratio: 1; max-width: 48px; max-height: 48px; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #f4f4f8; }}
     .strum-down {{ background: rgba(60, 130, 255, .25); border-color: rgba(60,130,255,.3); }}
     .strum-up {{ background: rgba(116, 188, 255, .2); border-color: rgba(116,188,255,.25); }}
     .strum-root {{ background: rgba(255, 206, 86, .22); border-color: rgba(255,206,86,.3); color: #fff3b2; }}
     .strum-alt {{ background: rgba(255, 150, 50, .25); border-color: rgba(255,150,50,.35); color: #ffd4a0; }}
     .strum-root-arrow {{ font-size: 0.7rem; }}
     .strum-mute {{ background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.06); }}
-    .tempo-display {{ font-size: 1.4rem; font-weight: 700; color: var(--accent); text-align: center; padding: 10px 8px; background: none; border: 1px solid transparent; border-radius: 12px; cursor: pointer; width: 100%; transition: border-color .2s, background .2s; }}
+    .tempo-display {{ font-size: 2.6rem; font-weight: 700; color: var(--accent); text-align: center; padding: 10px 8px; background: none; border: 1px solid transparent; border-radius: 12px; cursor: pointer; width: 100%; transition: border-color .2s, background .2s; }}
     .tempo-display:hover {{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }}
     .tempo-display.active {{ background: rgba(255,255,255,.06); border-color: var(--accent); }}
     .tempo-unit {{ font-size: 0.85rem; font-weight: 500; opacity: 0.7; }}
@@ -517,6 +531,8 @@ def build_html(songs: list[dict]) -> str:
     .pdf-viewport {{ position: absolute; inset: 0; overflow: hidden; }}
     .pdf-viewport embed {{ position: absolute; top: -150px; left: 0; width: 100%; height: calc(100% + 150px); }}
     .pdf-close-btn {{ position: absolute; top: 10px; right: 12px; z-index: 21; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; font-size: 1rem; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }}
+    .spotify-card {{ overflow: hidden; border-radius: 12px; height: 80px; }}
+    .spotify-card iframe {{ display: block; width: 100%; height: 80px; border-radius: 12px; }}
     @keyframes metroPulse {{ 0% {{ transform: scale(1); opacity: 1; }} 8% {{ transform: scale(1.18); opacity: 1; }} 30% {{ transform: scale(1); opacity: 1; }} 100% {{ transform: scale(1); opacity: 1; }} }}
     .tempo-display.beat {{ animation: metroPulse calc(var(--beat-ms) * 1ms) linear; }}
     .song-footer {{ display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b3c4d5; }}
@@ -565,6 +581,7 @@ def build_html(songs: list[dict]) -> str:
       if (lyricsBox) lyricsBox.scrollTop = 0;
       if (autoScrollEnabled) startAutoScroll(); else stopAutoScroll();
       updatePickerLabel(index);
+      localStorage.setItem('songbook-last-index', index);
     }}
 
     function startAutoScroll() {{
@@ -684,8 +701,9 @@ def build_html(songs: list[dict]) -> str:
       }});
     }});
 
-    setActive(0);
-    updatePickerLabel(0);
+    const savedIndex = parseInt(localStorage.getItem('songbook-last-index') || '0', 10);
+    setActive(Math.min(savedIndex, songSections.length - 1));
+    updatePickerLabel(currentIndex);
 
     document.querySelectorAll('.pdf-open-btn').forEach(btn => {{
       btn.addEventListener('click', () => {{

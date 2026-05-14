@@ -2,6 +2,8 @@ Patience
 BPM: 72
 Strumming: D - D - D - D U
 
+Spotify: https://open.spotify.com/track/2uKcU4FPX5eOjmd6RWb9OF?si=02b04aa7634346b0
+
 Chord progression:
 Verse
 | C | G | A | D |
