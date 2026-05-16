@@ -383,12 +383,17 @@ def render_song(song: dict) -> str:
     pdf_buttons_html = ""
     pdf_overlays_html = ""
     for pdf_name in song.get("pdf_tabs", []):
-        label = pdf_name[len(song['title']):].strip().removesuffix('.pdf').strip() or "Tab"
+        raw_label = pdf_name[len(song['title']):].strip().removesuffix('.pdf').strip()
+        label = raw_label if raw_label else "Tab"
+        for keyword in ("Intro", "Solo", "Riff"):
+            if keyword.lower() in label.lower():
+                label = keyword
+                break
         pdf_id = f"pdf-{song['id']}-{re.sub(r'[^a-z0-9]', '-', pdf_name.lower())}"
         pdf_path = quote(f"songs/{pdf_name}")
         pdf_buttons_html += f'''
             <div class="info-card info-card-small">
-              <h2>Tab / Riff</h2>
+              <h2>Intro / Solo / Riff</h2>
               <button class="pdf-open-btn" data-pdf-id="{pdf_id}">{html.escape(label)}</button>
             </div>'''
         pdf_overlays_html += f'''
@@ -529,7 +534,7 @@ def build_html(songs: list[dict]) -> str:
     .pdf-overlay {{ position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); padding: 20px; }}
     .pdf-modal {{ position: relative; width: 100%; height: 100%; max-width: 900px; max-height: calc(100% - 40px); background: #1a1a2e; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.15); }}
     .pdf-viewport {{ position: absolute; inset: 0; overflow: hidden; }}
-    .pdf-viewport embed {{ position: absolute; top: -150px; left: 0; width: 100%; height: calc(100% + 150px); }}
+    .pdf-viewport embed {{ position: absolute; top: -265px; left: 0; width: 100%; height: calc(100% + 265px); }}
     .pdf-close-btn {{ position: absolute; top: 10px; right: 12px; z-index: 21; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; font-size: 1rem; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }}
     .spotify-card {{ overflow: hidden; border-radius: 12px; height: 80px; }}
     .spotify-card iframe {{ display: block; width: 100%; height: 80px; border-radius: 12px; }}
@@ -723,6 +728,27 @@ def build_html(songs: list[dict]) -> str:
       overlay.addEventListener('click', e => {{
         if (e.target === overlay) overlay.style.display = 'none';
       }});
+    }});
+
+    document.addEventListener('keydown', e => {{
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight') {{
+        stopAutoScroll(); autoScrollEnabled = false;
+        autoScrollToggle.textContent = 'Auto-scroll av';
+        autoScrollToggle.classList.remove('active');
+        setActive(currentIndex + 1);
+      }} else if (e.key === 'ArrowLeft') {{
+        stopAutoScroll(); autoScrollEnabled = false;
+        autoScrollToggle.textContent = 'Auto-scroll av';
+        autoScrollToggle.classList.remove('active');
+        setActive(currentIndex - 1);
+      }} else if (e.key === 'm' || e.key === 'M') {{
+        const btn = songSections[currentIndex]?.querySelector('.tempo-display');
+        if (!btn) return;
+        if (btn.classList.contains('active')) stopMetronome(); else startMetronome(btn);
+      }} else if (e.key === 's' || e.key === 'S') {{
+        toggleAutoScroll();
+      }}
     }});
   </script>
 </body>
