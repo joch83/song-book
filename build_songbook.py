@@ -161,8 +161,9 @@ def render_strumming_visual(pattern: str) -> str:
             icons.append('<span class="strum-step strum-mute"></span>')
         else:
             icons.append('<span class="strum-step strum-down">↓</span>')
-    cols = len(tokens)
-    return f'<div class="strum-visual" style="grid-template-columns: repeat({cols}, 1fr)">{"".join(icons)}</div>'
+    while len(icons) < 8:
+        icons.append('<span class="strum-step strum-empty"></span>')
+    return f'<div class="strum-visual">{"".join(icons)}</div>'
 
 
 def is_chord_line(line: str) -> bool:
@@ -263,6 +264,7 @@ def parse_song(file_path: Path) -> dict:
     in_lyrics = False
     file_bpm = None
     file_strumming = None
+    strumming_patterns = []
     spotify_url = None
 
     for line in lines:
@@ -272,8 +274,20 @@ def parse_song(file_path: Path) -> dict:
             if val.isdigit():
                 file_bpm = int(val)
             continue
-        if low.startswith("strumming:"):
-            file_strumming = line.strip()[10:].strip()
+        if low.startswith("strumming"):
+            rest = line.strip()[9:].strip()
+            if rest.startswith(":"):
+                pattern = rest[1:].strip()
+                file_strumming = pattern
+                strumming_patterns.append({"label": None, "pattern": pattern})
+            else:
+                colon = rest.find(":")
+                if colon != -1:
+                    label = rest[:colon].strip()
+                    pattern = rest[colon+1:].strip()
+                    if not file_strumming:
+                        file_strumming = pattern
+                    strumming_patterns.append({"label": label, "pattern": pattern})
             continue
         if low.startswith("spotify:"):
             spotify_url = line.strip()[8:].strip()
@@ -310,6 +324,7 @@ def parse_song(file_path: Path) -> dict:
         "file_bpm": file_bpm,
         "file_strumming": file_strumming,
         "strumming": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down"),
+        "strumming_patterns": strumming_patterns or [{"label": None, "pattern": file_strumming or DEFAULT_STRUMMING.get(title, "Down Down Up Down Up Down")}],
         "pdf_tabs": [p.name for p in pdf_files],
         "spotify_url": spotify_url,
     }
@@ -369,7 +384,15 @@ def render_song(song: dict) -> str:
         theme['bgImage'] = load_image_as_base64(f"{song['title']}.png")
     chords_html = render_chord_progression(song["chord_progression"])
     lyrics_html = render_lyrics_with_chords(song["lyrics"])
-    strum_visual = render_strumming_visual(song["strumming"])
+    strum_parts = []
+    for sp in song["strumming_patterns"]:
+        if sp["label"]:
+            color = get_chord_color(sp["label"])
+            label_html = f'<div class="strum-label" style="color:{color};">{html.escape(sp["label"])}</div>'
+        else:
+            label_html = ''
+        strum_parts.append(label_html + render_strumming_visual(sp["pattern"]))
+    strum_visual = "".join(strum_parts)
     bpm = song.get("file_bpm") or theme.get("bpm", 100)
 
     spotify_html = ""
@@ -517,8 +540,10 @@ def build_html(songs: list[dict]) -> str:
     .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
     .prog-chord {{ font-weight: 700; font-size: 1.0rem; padding: 8px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
-    .strum-visual {{ display: grid; gap: 6px; }}
-    .strum-step {{ display: inline-flex; width: 100%; aspect-ratio: 1; max-width: 48px; max-height: 48px; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.1rem; font-weight: 700; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #f4f4f8; }}
+    .strum-label {{ font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 6px 0 3px; }}
+    .strum-visual {{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }}
+    .strum-step {{ display: inline-flex; width: 100%; aspect-ratio: 1; align-items: center; justify-content: center; border-radius: 10px; font-size: 1rem; font-weight: 700; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: #f4f4f8; }}
+    .strum-empty {{ background: transparent; border-color: transparent; pointer-events: none; }}
     .strum-down {{ background: rgba(60, 130, 255, .25); border-color: rgba(60,130,255,.3); }}
     .strum-up {{ background: rgba(116, 188, 255, .2); border-color: rgba(116,188,255,.25); }}
     .strum-root {{ background: rgba(255, 206, 86, .22); border-color: rgba(255,206,86,.3); color: #fff3b2; }}
