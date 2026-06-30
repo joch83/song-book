@@ -568,6 +568,48 @@ def build_html(songs: list[dict]) -> str:
     .song-footer {{ display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b3c4d5; }}
     .song-footer span {{ font-size: 0.95rem; }}
     @keyframes floatNote {{ 0%, 100% {{ transform: translateY(0px) rotate(0deg); opacity: 0.1; }} 50% {{ transform: translateY(-30px) rotate(180deg); opacity: 0.2; }} }}
+    @media (max-width: 768px) {{
+      html, body {{ overflow-y: auto; height: auto; }}
+      header {{ padding: 12px 16px; }}
+      .topbar h1 {{ font-size: 0.9rem; }}
+      .song-picker-btn {{ font-size: 0.85rem; padding: 8px 12px; }}
+      #auto-scroll-toggle {{ font-size: 0.8rem; padding: 8px 10px; }}
+      .song-picker-menu {{ min-width: min(360px, calc(100vw - 32px)); left: auto; right: 0; transform: translateY(-6px); }}
+      .song-picker-menu.open {{ transform: translateY(0); }}
+      main {{ height: auto; margin-top: 74px; }}
+      .song-section {{
+        display: none;
+        height: auto;
+        overflow: visible;
+        padding: 12px 12px 48px;
+        background-attachment: scroll;
+      }}
+      .song-section.active {{ display: block; animation: fadeIn .3s ease; }}
+      .song-title-block {{
+        position: relative;
+        top: auto;
+        left: auto;
+        max-width: 100%;
+        margin-bottom: 14px;
+        padding-top: 6px;
+      }}
+      .song-title-block h1 {{ white-space: normal; font-size: clamp(1.3rem, 6vw, 1.8rem); line-height: 1.3; }}
+      .song-frame {{ height: auto; }}
+      .song-grid {{ grid-template-columns: 1fr; height: auto; gap: 12px; }}
+      .song-main {{
+        order: -1;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        margin: 0;
+        padding: 20px;
+      }}
+      .lyrics-box {{ flex: none; overflow-y: visible; min-height: 0; height: auto; }}
+      .song-meta-left {{ margin-top: 0; }}
+      .strum-step {{ font-size: 0.9rem; border-radius: 8px; }}
+      .prog-chord {{ font-size: 0.9rem; padding: 6px 4px; }}
+      .tempo-display {{ font-size: 2rem; }}
+    }}
   </style>
 </head>
 <body>
