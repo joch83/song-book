@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 SONG_DIR = Path(__file__).parent
 SONGS_DIR = SONG_DIR / "songs"
-OUTPUT_FILE = SONG_DIR / "songbook.html"
+OUTPUT_FILE = SONG_DIR / "index.html"
 
 # Global chord color mapping - same chord always gets same color
 CHORD_COLORS = {
