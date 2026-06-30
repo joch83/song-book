@@ -150,17 +150,17 @@ def render_strumming_visual(pattern: str) -> str:
     for token in tokens:
         t = token.upper()
         if t == 'D':
-            icons.append('<span class="strum-step strum-down">↓</span>')
+            icons.append('<span class="strum-step strum-down" title="Down stroke">↓</span>')
         elif t == 'U':
-            icons.append('<span class="strum-step strum-up">↑</span>')
+            icons.append('<span class="strum-step strum-up" title="Up stroke">↑</span>')
         elif t == 'R':
-            icons.append('<span class="strum-step strum-root"><span class="strum-root-arrow">↓</span></span>')
+            icons.append('<span class="strum-step strum-root" title="Root note (down)"><span class="strum-root-arrow">↓</span></span>')
         elif t == 'A':
-            icons.append('<span class="strum-step strum-alt"><span class="strum-root-arrow">↓</span></span>')
+            icons.append('<span class="strum-step strum-alt" title="Alt root note (down)"><span class="strum-root-arrow">↓</span></span>')
         elif t == '-':
-            icons.append('<span class="strum-step strum-mute"></span>')
+            icons.append('<span class="strum-step strum-mute" title="Mute / pause"></span>')
         else:
-            icons.append('<span class="strum-step strum-down">↓</span>')
+            icons.append('<span class="strum-step strum-down" title="Down stroke">↓</span>')
     while len(icons) < 8:
         icons.append('<span class="strum-step strum-empty"></span>')
     return f'<div class="strum-visual">{"".join(icons)}</div>'

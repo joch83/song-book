@@ -1,19 +1,22 @@
 You Can't Always Get What You Want
 BPM: 96
-Strumming C: D - D - D - - U D - D - - U D U
+Strumming C: D - - - D - - - D - D - D U D U
 
-Strumming G: D - D U D - D U D - D - - U D U
+Strumming G: D - D - D - - - - - D U D - D -
 
 Spotify:
 
 Chord progression:
 Verse
-| C | C | F | F |
+| C | F |
+| C | F |
+| C | F |
+| C | F |
 
 Chorus
-| C | F | C | F |
-| C | F | G | G |
-
+| F | C | F | C |
+| F | C | G | C |
+| F | C |
 
 Lyrics:
 [Intro]
