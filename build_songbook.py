@@ -574,7 +574,19 @@ def build_html(songs: list[dict]) -> str:
       .topbar h1 {{ font-size: 0.9rem; }}
       .song-picker-btn {{ font-size: 0.85rem; padding: 8px 12px; }}
       #auto-scroll-toggle {{ font-size: 0.8rem; padding: 8px 10px; }}
-      .song-picker-menu {{ min-width: min(360px, calc(100vw - 32px)); left: auto; right: 0; transform: translateY(-6px); }}
+      .song-picker-menu {{
+        position: fixed;
+        top: 74px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-width: 0;
+        border-radius: 0 0 16px 16px;
+        grid-template-columns: 1fr;
+        max-height: calc(100vh - 74px);
+        overflow-y: auto;
+        transform: translateY(-6px);
+      }}
       .song-picker-menu.open {{ transform: translateY(0); }}
       main {{ height: auto; margin-top: 74px; }}
       .song-section {{
