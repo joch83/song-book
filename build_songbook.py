@@ -405,6 +405,7 @@ def render_song(song: dict) -> str:
 
     pdf_buttons_html = ""
     pdf_overlays_html = ""
+    pdf_inner_buttons = ""
     for pdf_name in song.get("pdf_tabs", []):
         raw_label = pdf_name[len(song['title']):].strip().removesuffix('.pdf').strip()
         label = raw_label if raw_label else "Tab"
@@ -414,11 +415,7 @@ def render_song(song: dict) -> str:
                 break
         pdf_id = f"pdf-{song['id']}-{re.sub(r'[^a-z0-9]', '-', pdf_name.lower())}"
         pdf_path = quote(f"songs/{pdf_name}")
-        pdf_buttons_html += f'''
-            <div class="info-card info-card-small">
-              <h2>Intro / Solo / Riff</h2>
-              <button class="pdf-open-btn" data-pdf-id="{pdf_id}">{html.escape(label)}</button>
-            </div>'''
+        pdf_inner_buttons += f'<button class="pdf-open-btn" data-pdf-id="{pdf_id}">{html.escape(label)}</button>\n              '
         pdf_overlays_html += f'''
       <div class="pdf-overlay" id="{pdf_id}" style="display:none">
         <div class="pdf-modal">
@@ -428,6 +425,13 @@ def render_song(song: dict) -> str:
           </div>
         </div>
       </div>'''
+    if pdf_inner_buttons:
+        pdf_buttons_html = f'''
+            <div class="info-card info-card-small">
+              <h2>Intro / Solo / Riff</h2>
+              <div class="pdf-btn-group">
+              {pdf_inner_buttons}</div>
+            </div>'''
     if theme['bgImage'] and theme['bgImage'] != 'none':
         bg_image_css = f"background-image: url('data:image/png;base64,{theme['bgImage']}');"
     else:
@@ -554,6 +558,7 @@ def build_html(songs: list[dict]) -> str:
     .tempo-display:hover {{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }}
     .tempo-display.active {{ background: rgba(255,255,255,.06); border-color: var(--accent); }}
     .tempo-unit {{ font-size: 0.85rem; font-weight: 500; opacity: 0.7; }}
+    .pdf-btn-group {{ display: flex; flex-direction: column; gap: 8px; }}
     .pdf-open-btn {{ width: 100%; padding: 8px 10px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; color: #e6f1ff; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s; }}
     .pdf-open-btn:hover {{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); }}
     .pdf-overlay {{ position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); padding: 20px; }}
