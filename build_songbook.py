@@ -564,7 +564,7 @@ def build_html(songs: list[dict]) -> str:
     .pdf-overlay {{ position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); padding: 20px; }}
     .pdf-modal {{ position: relative; width: 100%; height: 100%; max-width: 900px; max-height: calc(100% - 40px); background: #1a1a2e; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.15); }}
     .pdf-viewport {{ position: absolute; inset: 0; overflow: hidden; }}
-    .pdf-viewport embed {{ position: absolute; top: -265px; left: 0; width: 100%; height: calc(100% + 265px); }}
+    .pdf-viewport embed {{ position: absolute; top: -240px; left: 0; width: 100%; height: calc(100% + 240px); }}
     .pdf-close-btn {{ position: absolute; top: 10px; right: 12px; z-index: 21; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; font-size: 1rem; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }}
     .spotify-card {{ overflow: hidden; border-radius: 12px; height: 80px; }}
     .spotify-card iframe {{ display: block; width: 100%; height: 80px; border-radius: 12px; }}

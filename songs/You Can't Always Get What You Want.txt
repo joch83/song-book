@@ -4,7 +4,9 @@ Strumming C: D - - - D - - - D - D - D U D U
 
 Strumming G: D - D - D - - - - - D U D - D -
 
-Spotify:
+Strumming Chorus: D - D - D - - U D - D - - U D U
+
+Spotify: https://open.spotify.com/track/6lFZbCc7pn6Lme1NP7qQqQ?si=cc182413b6bc4563
 
 Chord progression:
 Verse
@@ -14,9 +16,9 @@ Verse
 | C | F |
 
 Chorus
-| F | C | F | C |
-| F | C | G | C |
-| F | C |
+| C | F | C | F |
+| C | F | D | F |
+| C | F |
 
 Lyrics:
 [Intro]
@@ -33,15 +35,15 @@ C                 F
 At her feet was a footloose man
 
 [Chorus]
-    F                C
+    C                F
 You can't always get what you want
-    F                C
+    C                F
 You can't always get what you want
-    F                C               G
+    C                F               
 You can't always get what you want
-                              C
+   D                          F
 But if you try sometimes, well you just might find
-               F         C
+               C         F
 You get what you need
 
 [Verse 2]
@@ -55,6 +57,16 @@ C              F
 If we don't we're gonna blow a fifty-amp fuse"
 
 [Chorus]
+    C                F
+You can't always get what you want
+    C                F
+You can't always get what you want
+    C                F               
+You can't always get what you want
+   D                          F
+But if you try sometimes, well you just might find
+               C         F
+You get what you need
 
 [Verse 3]
 C                              F
@@ -76,6 +88,16 @@ C                             F
 Yeah, and he said one word to me, and that was "dead"
 
 [Chorus]
+    C                F
+You can't always get what you want
+    C                F
+You can't always get what you want
+    C                F               
+You can't always get what you want
+   D                          F
+But if you try sometimes, well you just might find
+               C         F
+You get what you need
 
 [Verse 4]
 C                                  F
@@ -88,13 +110,13 @@ C                   F
 Well I could tell by her blood-stained hands
 
 [Chorus]
-    F                C
+    C                F
 You can't always get what you want
-    F                C
+     C                F
 You can't always get what you want
-    F                C               G
+     C                F
 You can't always get what you want
-                              C
+   D                          F
 But if you try sometimes, well you just might find
-               F         C
+              C         F
 You get what you need

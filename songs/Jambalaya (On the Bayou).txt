@@ -11,7 +11,7 @@ Chord progression:
 
 Lyrics:
 [Intro]
-| G  | G  | C  | C  |
+G G C C
  
 [Verse 1]
         C                       G

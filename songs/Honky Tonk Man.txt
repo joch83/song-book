@@ -19,17 +19,17 @@ Lyrics:
 Well, I'm a honky tonk man and I can't seem to stop
                            A                                 E
 I love to give the girls a whirl to the music of an old jukebox
-                        B
+                        B7
 But when my money's all gone, I'm on the telephone singing
      E
 Hey, hey, mama can your daddy come home
  
 [Verse]
-    E                   B
+    E                   B7
 Now I'm living wild and dangerously
     A                  E
 But I've got plenty of company
-                               B
+                               B7
 When the moon comes up and the sun goes down
 A                       E
 I can't wait to see the lights of town
@@ -39,30 +39,30 @@ I can't wait to see the lights of town
 'Cause I'm a honky tonk man and I can't seem to stop
                            A                                E
 I love to give the girls a whirl to the music of an old jukebox
-                        B
+                        B7
 But when my money's all gone, I'm on the telephone singing
 E
 Hey, hey, mama can your daddy come home
  
 [Solo]
-E A E B  E
+E A E B7  E
  
 [Chorus]
                         E
 'Cause I'm a honky tonk man and I can't seem to stop
                            A                                E
 I love to give the girls a whirl to the music of an old jukebox
-                        B
+                        B7
 But when my money's all gone, I'm on the telephone singing
 E
 Hey, hey, mama can your daddy come home
  
 [Verse]
-  E                        B
+  E                        B7
 A pretty little girl and a jug of wine
      A                              E
 Well that's what it takes to make a honky tonk time
-                               B
+                               B7
 With the jukebox moaning those honky tonk sounds
 A                      E
 I can't wait to lay my money down
@@ -72,7 +72,7 @@ I can't wait to lay my money down
 'Cause I'm a honky tonk man and I can't seem to stop
                            A                                E
 I love to give the girls a whirl to the music of an old jukebox
-                        B
+                        B7
 But when my money's all gone, I'm on the telephone singing
 E
 Hey, hey, mama can your daddy come home
@@ -86,7 +86,7 @@ E
 'Cause I'm a honky tonk man and I can't seem to stop
                            A                                E
 I love to give the girls a whirl to the music of an old jukebox
-                        B
+                        B7
 But when my money's all gone, I'm on the telephone singing
 E
 Hey, hey, mama can your daddy come home
