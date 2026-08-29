@@ -59,6 +59,26 @@ def get_chord_color(chord: str) -> str:
             return CHORD_COLORS[root]
     return "#8BD3FF"
 
+CHORD_IMAGES = {
+    "A":     "A Major.png",
+    "Am":    "A Minor.png",
+    "A7":    "A7.png",
+    "B7":    "B7.png",
+    "Cadd9": "C Add9.png",
+    "C":     "C Major.png",
+    "Dm":    "D  Minor.png",
+    "D":     "D Major.png",
+    "E":     "E Major.png",
+    "Em":    "E Minor.png",
+    "E7":    "E7.png",
+    "F":     "F Major.png",
+    "G":     "G Major.png",
+}
+
+def get_chord_image_path(chord: str) -> str:
+    filename = CHORD_IMAGES.get(chord)
+    return f"Chords/{quote(filename)}" if filename else ""
+
 DEFAULT_STRUMMING = {
     "Folsom Prison Blues": "Down Down Up Down Up Down",
     "Jambalaya (On the Bayou)": "Down Down Up Down Up Down",
@@ -215,7 +235,8 @@ def render_chord_line(line: str) -> str:
         
         # Add the chord as a span with individual color
         color = get_chord_color(token)
-        parts.append(f'<span class="chord" style="color: {color};">{html.escape(token)}</span>')
+        data = f' data-chord="{html.escape(token)}"' if get_chord_image_path(token) else ''
+        parts.append(f'<span class="chord"{data} style="color: {color};">{html.escape(token)}</span>')
         current_pos = match.end()
     
     # Add any remaining spaces at the end
@@ -241,7 +262,8 @@ def render_lyrics_with_chords(lyrics_lines: list[str]) -> str:
                     new_line += html.escape(part)
                 else:  # Chord part - wrap in span with color
                     color = get_chord_color(part)
-                    new_line += f'<span class="chord" style="color: {color};">{part}</span>'
+                    data = f' data-chord="{html.escape(part)}"' if get_chord_image_path(part) else ''
+                    new_line += f'<span class="chord"{data} style="color: {color};">{part}</span>'
             result.append(new_line)
     return "\n".join(result)
 
@@ -361,13 +383,15 @@ def render_chord_progression(prog_lines: list[str]) -> str:
             color = get_chord_color(chords[0])
             inner = f'<span style="color:{color};">{html.escape(chords[0])}</span>'
             style = f'border-color:{color};background:color-mix(in srgb,{color} 15%,transparent);'
+            data = f' data-chord="{html.escape(chords[0])}"' if get_chord_image_path(chords[0]) else ''
         else:
             inner = ' '.join(
                 f'<span style="color:{get_chord_color(c)};">{html.escape(c)}</span>'
                 for c in chords
             )
             style = 'border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.07);white-space:nowrap;font-size:0.88rem;'
-        return f'<span class="prog-chord" style="{style}">{inner}</span>'
+            data = ''
+        return f'<span class="prog-chord"{data} style="{style}">{inner}</span>'
 
     parts = []
     for label, bars in sections:
@@ -480,6 +504,16 @@ def build_html(songs: list[dict]) -> str:
     )
     first_title = html.escape(songs[0]['title']) if songs else "Songs"
     sections = "\n".join(render_song(song) for song in songs)
+    chord_bank_items = "\n".join(
+        f'<div class="chord-bank-item" data-chord="{html.escape(chord)}">'
+        f'<img src="{get_chord_image_path(chord)}" alt="{html.escape(chord)}" loading="lazy">'
+        f'<span style="color:{get_chord_color(chord)};">{html.escape(chord)}</span>'
+        f'</div>'
+        for chord in CHORD_IMAGES
+    )
+    chord_images_js = "{" + ", ".join(
+        f'"{k}": "{get_chord_image_path(k)}"' for k in CHORD_IMAGES
+    ) + "}"
     return f"""
 <!DOCTYPE html>
 <html lang="sv">
@@ -573,6 +607,23 @@ def build_html(songs: list[dict]) -> str:
     .song-footer {{ display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b3c4d5; }}
     .song-footer span {{ font-size: 0.95rem; }}
     @keyframes floatNote {{ 0%, 100% {{ transform: translateY(0px) rotate(0deg); opacity: 0.1; }} 50% {{ transform: translateY(-30px) rotate(180deg); opacity: 0.2; }} }}
+    [data-chord] {{ cursor: pointer; }}
+    [data-chord]:hover {{ opacity: 0.75; }}
+    .chord-overlay {{ position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.65); backdrop-filter: blur(8px); }}
+    .chord-modal {{ background: rgba(18,22,38,.97); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 28px 24px 20px; text-align: center; position: relative; min-width: 200px; }}
+    .chord-modal img {{ max-width: 220px; width: 100%; border-radius: 10px; display: block; margin: 0 auto 10px; }}
+    .chord-modal-name {{ font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }}
+    .chord-modal-close {{ position: absolute; top: 10px; right: 12px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: #fff; font-size: 1rem; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; }}
+    .chord-bank-overlay {{ position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,.7); backdrop-filter: blur(8px); overflow-y: auto; padding: 80px 20px 40px; }}
+    .chord-bank-modal {{ background: rgba(18,22,38,.97); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 28px; width: 100%; max-width: 720px; position: relative; }}
+    .chord-bank-modal h2 {{ margin: 0 0 20px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .15em; color: #9fd7ff; }}
+    .chord-bank-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }}
+    .chord-bank-item {{ background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px 8px 8px; text-align: center; cursor: pointer; transition: background .2s; }}
+    .chord-bank-item:hover {{ background: rgba(255,255,255,.12); }}
+    .chord-bank-item img {{ width: 100%; border-radius: 8px; display: block; margin-bottom: 6px; }}
+    .chord-bank-item span {{ font-size: 0.9rem; font-weight: 700; }}
+    #chord-bank-btn {{ font-size: .85rem; padding: 8px 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: #f4f4f8; cursor: pointer; transition: background .2s; }}
+    #chord-bank-btn:hover {{ background: rgba(255,255,255,.12); }}
     @media (max-width: 768px) {{
       html, body {{ overflow-y: auto; height: auto; }}
       header {{ padding: 12px 16px; }}
@@ -642,12 +693,32 @@ def build_html(songs: list[dict]) -> str:
           {song_items}
         </div>
       </div>
+      <button id="chord-bank-btn" type="button">🎸 Ackordbank</button>
       <button id="auto-scroll-toggle" class="song-button song-toggle-button" type="button">Auto-scroll av</button>
     </div>
   </header>
   <main>
     {sections}
   </main>
+
+  <div class="chord-overlay" id="chord-diagram-overlay" style="display:none">
+    <div class="chord-modal">
+      <button class="chord-modal-close" id="chord-diagram-close">✕</button>
+      <div class="chord-modal-name" id="chord-diagram-name"></div>
+      <img id="chord-diagram-img" src="" alt="">
+    </div>
+  </div>
+
+  <div class="chord-bank-overlay" id="chord-bank-overlay" style="display:none">
+    <div class="chord-bank-modal">
+      <button class="chord-modal-close" id="chord-bank-close">✕</button>
+      <h2>Ackordbank</h2>
+      <div class="chord-bank-grid">
+        {chord_bank_items}
+      </div>
+    </div>
+  </div>
+
   <script>
     const songSections = Array.from(document.querySelectorAll('.song-section'));
     let currentIndex = 0;
@@ -832,7 +903,58 @@ def build_html(songs: list[dict]) -> str:
         if (btn.classList.contains('active')) stopMetronome(); else startMetronome(btn);
       }} else if (e.key === 's' || e.key === 'S') {{
         toggleAutoScroll();
+      }} else if (e.key === 'Escape') {{
+        chordDiagramOverlay.style.display = 'none';
+        chordBankOverlay.style.display = 'none';
       }}
+    }});
+
+    // Chord diagram popup
+    const CHORD_IMAGES = {chord_images_js};
+    const chordDiagramOverlay = document.getElementById('chord-diagram-overlay');
+    const chordDiagramImg = document.getElementById('chord-diagram-img');
+    const chordDiagramName = document.getElementById('chord-diagram-name');
+    const chordBankOverlay = document.getElementById('chord-bank-overlay');
+
+    function showChordDiagram(chordName, color) {{
+      const path = CHORD_IMAGES[chordName];
+      if (!path) return;
+      chordDiagramName.textContent = chordName;
+      chordDiagramName.style.color = color || '#f4f4f8';
+      chordDiagramImg.src = path;
+      chordDiagramOverlay.style.display = 'flex';
+    }}
+
+    document.querySelectorAll('[data-chord]').forEach(el => {{
+      el.addEventListener('click', e => {{
+        e.stopPropagation();
+        const color = el.style.color || el.querySelector('[style]')?.style.color || '';
+        showChordDiagram(el.dataset.chord, color);
+      }});
+    }});
+
+    document.getElementById('chord-diagram-close').addEventListener('click', () => {{
+      chordDiagramOverlay.style.display = 'none';
+    }});
+    chordDiagramOverlay.addEventListener('click', e => {{
+      if (e.target === chordDiagramOverlay) chordDiagramOverlay.style.display = 'none';
+    }});
+
+    // Chord bank
+    document.getElementById('chord-bank-btn').addEventListener('click', () => {{
+      chordBankOverlay.style.display = 'flex';
+    }});
+    document.getElementById('chord-bank-close').addEventListener('click', () => {{
+      chordBankOverlay.style.display = 'none';
+    }});
+    chordBankOverlay.addEventListener('click', e => {{
+      if (e.target === chordBankOverlay) chordBankOverlay.style.display = 'none';
+    }});
+    document.querySelectorAll('.chord-bank-item').forEach(el => {{
+      el.addEventListener('click', () => {{
+        const color = el.querySelector('span')?.style.color || '';
+        showChordDiagram(el.dataset.chord, color);
+      }});
     }});
   </script>
 </body>
