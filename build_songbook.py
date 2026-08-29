@@ -60,19 +60,25 @@ def get_chord_color(chord: str) -> str:
     return "#8BD3FF"
 
 CHORD_IMAGES = {
-    "A":     "A Major.png",
-    "Am":    "A Minor.png",
-    "A7":    "A7.png",
-    "B7":    "B7.png",
-    "Cadd9": "C Add9.png",
-    "C":     "C Major.png",
-    "Dm":    "D  Minor.png",
-    "D":     "D Major.png",
-    "E":     "E Major.png",
-    "Em":    "E Minor.png",
-    "E7":    "E7.png",
-    "F":     "F Major.png",
-    "G":     "G Major.png",
+    "A":       "A Major.png",
+    "Am":      "A Minor.png",
+    "A7":      "A7.png",
+    "B7":      "B7.png",
+    "Cadd9":   "C Add9.png",
+    "C":       "C Major.png",
+    "Dm":      "D  Minor.png",
+    "D":       "D Major.png",
+    "D/F#":    "D F#.png",
+    "D7":      "D7.png",
+    "Dsus2":   "Dsus2.png",
+    "Dsus4":   "Dsus4.png",
+    "E":       "E Major.png",
+    "Em":      "E Minor.png",
+    "E7":      "E7.png",
+    "F":       "F Major.png",
+    "Fmaj7":   "F Major7.png",
+    "Fmaj7/C": "F Major7C.png",
+    "G":       "G Major.png",
 }
 
 def get_chord_image_path(chord: str) -> str:
