@@ -10,39 +10,39 @@ OUTPUT_FILE = SONG_DIR / "index.html"
 
 # Global chord color mapping - same chord always gets same color
 CHORD_COLORS = {
-    # 7 clearly distinct major colors
-    "C": "#FF5252",      # Red
-    "C#": "#FF7575",     # Light Red
-    "Db": "#FF7575",     # Light Red
+    # 7 distinct major colors
+    "A": "#448AFF",      # Blue
+    "A#": "#74A8FF",     # Light Blue
+    "Bb": "#74A8FF",     # Light Blue
+    "B": "#FF5252",      # Red
+    "C": "#FFD93D",      # Yellow
+    "C#": "#FFE870",     # Light Yellow
+    "Db": "#FFE870",     # Light Yellow
     "D": "#4ECDC4",      # Teal
     "D#": "#7FE7E0",     # Light Teal
     "Eb": "#7FE7E0",     # Light Teal
-    "E": "#FFD93D",      # Yellow
-    "F": "#FF9F43",      # Orange
-    "F#": "#FFB870",     # Light Orange
-    "Gb": "#FFB870",     # Light Orange
-    "G": "#448AFF",      # Blue (distinct from D's teal)
-    "G#": "#74A8FF",     # Light Blue
-    "Ab": "#74A8FF",     # Light Blue
-    "A": "#FF6BA6",      # Pink/Magenta
-    "A#": "#FF94C2",     # Light Pink
-    "Bb": "#FF94C2",     # Light Pink
-    "B": "#B388FF",      # Purple/Violet
+    "E": "#FF9F43",      # Orange
+    "F": "#4CAF50",      # Green
+    "F#": "#76C442",     # Light Green
+    "Gb": "#76C442",     # Light Green
+    "G": "#B388FF",      # Purple
+    "G#": "#CE9EFF",     # Light Purple
+    "Ab": "#CE9EFF",     # Light Purple
     # Variations — same hue as root, darker shade
-    "C7": "#FF5252",
-    "Cm": "#CC2020",
+    "A7": "#448AFF",
+    "Am": "#1E6FD9",
+    "B7": "#FF5252",
+    "Bm": "#CC2020",
+    "C7": "#FFD93D",
+    "Cm": "#D9B61F",
     "D7": "#4ECDC4",
     "Dm": "#2DA49A",
-    "E7": "#FFD93D",
-    "Em": "#D9B61F",
-    "F7": "#FF9F43",
-    "Fm": "#E07B20",
-    "G7": "#448AFF",
-    "Gm": "#1E6FD9",
-    "A7": "#FF6BA6",
-    "Am": "#D94A8A",
-    "B7": "#B388FF",
-    "Bm": "#9B59B6",
+    "E7": "#FF9F43",
+    "Em": "#E07B20",
+    "F7": "#4CAF50",
+    "Fm": "#2E7D32",
+    "G7": "#B388FF",
+    "Gm": "#9B59B6",
 }
 
 def get_chord_color(chord: str) -> str:
