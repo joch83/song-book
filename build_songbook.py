@@ -10,39 +10,39 @@ OUTPUT_FILE = SONG_DIR / "index.html"
 
 # Global chord color mapping - same chord always gets same color
 CHORD_COLORS = {
-    "C": "#FF6B6B",      # Red
-    "C#": "#FF8E8E",     # Light Red
-    "Db": "#FF8E8E",     # Light Red
+    # 7 clearly distinct major colors
+    "C": "#FF5252",      # Red
+    "C#": "#FF7575",     # Light Red
+    "Db": "#FF7575",     # Light Red
     "D": "#4ECDC4",      # Teal
     "D#": "#7FE7E0",     # Light Teal
     "Eb": "#7FE7E0",     # Light Teal
     "E": "#FFD93D",      # Yellow
-    "F": "#95E1D3",      # Mint
-    "F#": "#B3F0DA",     # Light Mint
-    "Gb": "#B3F0DA",     # Light Mint
-    "G": "#A8D8FF",      # Light Blue
-    "G#": "#C7E2FF",     # Lighter Blue
-    "Ab": "#C7E2FF",     # Lighter Blue
-    "A": "#FF6BA6",      # Pink
+    "F": "#FF9F43",      # Orange
+    "F#": "#FFB870",     # Light Orange
+    "Gb": "#FFB870",     # Light Orange
+    "G": "#448AFF",      # Blue (distinct from D's teal)
+    "G#": "#74A8FF",     # Light Blue
+    "Ab": "#74A8FF",     # Light Blue
+    "A": "#FF6BA6",      # Pink/Magenta
     "A#": "#FF94C2",     # Light Pink
     "Bb": "#FF94C2",     # Light Pink
-    "B": "#D4A5FF",      # Purple
-    # Variations with numbers
-    "C7": "#FF6B6B",
-    "Cm": "#E85555",
+    "B": "#B388FF",      # Purple/Violet
+    # Variations — same hue as root, darker shade
+    "C7": "#FF5252",
+    "Cm": "#CC2020",
     "D7": "#4ECDC4",
     "Dm": "#2DA49A",
     "E7": "#FFD93D",
     "Em": "#D9B61F",
-    "F7": "#95E1D3",
-    "Fm": "#5FC4B8",
-    "G7": "#A8D8FF",
-    "Gm": "#6EB8FF",
+    "F7": "#FF9F43",
+    "Fm": "#E07B20",
+    "G7": "#448AFF",
+    "Gm": "#1E6FD9",
     "A7": "#FF6BA6",
     "Am": "#D94A8A",
-    "B7": "#D4A5FF",
-    "Bm": "#B085E5",
-    # Add more variations...
+    "B7": "#B388FF",
+    "Bm": "#9B59B6",
 }
 
 def get_chord_color(chord: str) -> str:
@@ -510,7 +510,7 @@ def build_html(songs: list[dict]) -> str:
     .song-picker-menu a:hover {{ background: rgba(255,255,255,.1); }}
     .song-picker-menu a.active {{ background: rgba(159,215,255,.15); color: #9fd7ff; }}
     main {{ width: 100%; height: calc(100vh - 90px); margin-top: 90px; }}
-    .song-section {{ position: relative; display: none; align-items: stretch; justify-items: center; padding: 4px 24px 24px; background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; overflow: hidden; height: 100%; }}
+    .song-section {{ position: relative; display: none; align-items: stretch; justify-items: start; padding: 4px 24px 24px; background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; overflow: hidden; height: 100%; }}
     .song-section.active {{ display: grid; animation: fadeIn .3s ease; }}
     @keyframes fadeIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
     .song-section::before {{ content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); opacity: 0.6; z-index: 0; }}
@@ -519,12 +519,12 @@ def build_html(songs: list[dict]) -> str:
     .song-frame {{ position: relative; width: min(1360px, 100%); height: 100%; z-index: 3; }}
     .song-button.song-toggle-button {{ background: rgba(255,255,255,.04); color: #c8d9e8; border: 1px solid rgba(255,255,255,.1); padding: 8px 14px; font-size: 0.85rem; font-weight: 500; transition: all .25s ease; }}
     .song-button.song-toggle-button:hover {{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #e8f0f8; }}
-    .song-title-block {{ position: absolute; top: 4px; left: 24px; z-index: 4; max-width: 380px; }}
+    .song-title-block {{ position: absolute; top: 4px; left: 24px; z-index: 4; max-width: 300px; }}
     .song-supertitle {{ margin: 0 0 2px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.8rem; }}
     .song-title-block h1 {{ margin: 0; font-size: clamp(1.4rem, 2vw, 2.2rem); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
     .song-note {{ margin: 4px 0 0; color: rgba(244,244,248,.6); font-size: 0.85rem; }}
     .song-button {{ padding: 12px 18px; background: var(--accent); color: #09101d; border-radius: 999px; text-decoration: none; font-weight: 700; box-shadow: 0 18px 45px rgba(0,0,0,.18); }}
-    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 242px 1fr 210px; height: 100%; min-height: 0; align-items: stretch; }}
+    .song-grid {{ display: grid; gap: 16px; grid-template-columns: 320px 1fr 210px; height: 100%; min-height: 0; align-items: stretch; }}
     .song-main {{ background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 34px; padding: 34px; box-shadow: 0 32px 80px rgba(0,0,0,.18); backdrop-filter: blur(14px); display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; max-height: 100%; overflow: hidden; margin-left: -12px; margin-right: -12px; }}
     .lyrics-box {{ flex: 1 1 0; min-height: 0; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.5) transparent; overscroll-behavior: contain; }}
     .lyrics-box pre {{ margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 1.02rem; line-height: 1.78; color: #f4f4f8; }}
@@ -542,7 +542,7 @@ def build_html(songs: list[dict]) -> str:
     .prog-section:last-child {{ margin-bottom: 0; }}
     .prog-label {{ font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 5px; }}
     .prog-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
-    .prog-chord {{ font-weight: 700; font-size: 1.0rem; padding: 8px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; }}
+    .prog-chord {{ font-weight: 700; font-size: 0.85rem; padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); text-align: center; letter-spacing: 0.02em; overflow: hidden; }}
     .strumming {{ font-size: 0.9rem; background: rgba(255,255,255,.08); padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; color: #f7fbff; }}
     .strum-label {{ font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 6px 0 3px; }}
     .strum-visual {{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }}
