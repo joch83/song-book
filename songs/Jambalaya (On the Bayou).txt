@@ -34,10 +34,10 @@ Pick guitar, fill fruit jar and be gay-o
 Son of a gun, we'll have big fun on the bayou
  
 [Instrumental]
-| C  | C  | G  | G  |
-| G  | G  | C  | C  |
-| C  | C  | G  | G  |
-| G  | G  | C  | C  |
+C   C   G   G  
+G   G   C   C  
+C   C   G   G  
+G   G   C   C  
  
 [Verse 2]
          C                                   G
@@ -60,10 +60,10 @@ Pick guitar, fill fruit jar and be gay-o
 Son of a gun, we'll have big fun on the bayou
  
 [Instrumental]
-| C  | C  | G  | G  |
-| G  | G  | C  | C  |
-| C  | C  | G  | G  |
-| G  | G  | C  | C  |
+C   C   G   G  
+G   G   C   C  
+C   C   G   G  
+G   G   C   C  
  
 [Chorus]
      C                                   G

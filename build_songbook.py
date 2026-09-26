@@ -79,6 +79,7 @@ CHORD_IMAGES = {
     "Fmaj7":   "F Major7.png",
     "Fmaj7/C": "F Major7C.png",
     "G":       "G Major.png",
+    "G7":      "G7.png",
 }
 
 def get_chord_image_path(chord: str) -> str:
@@ -174,15 +175,23 @@ def render_strumming_visual(pattern: str) -> str:
     tokens = pattern.split()
     icons = []
     for token in tokens:
-        t = token.upper()
+        base, push_sep, push_chord = token.partition('>')
+        t = base.upper()
+        push_class = ' strum-push' if push_sep and push_chord else ''
+        push_attr = ''
+        push_title = ''
+        if push_sep and push_chord:
+            color = get_chord_color(push_chord)
+            push_attr = f' style="--push-color:{color};"'
+            push_title = f' – ackordbyte till {html.escape(push_chord)}'
         if t == 'D':
-            icons.append('<span class="strum-step strum-down" title="Down stroke">↓</span>')
+            icons.append(f'<span class="strum-step strum-down{push_class}"{push_attr} title="Down stroke{push_title}">↓</span>')
         elif t == 'U':
-            icons.append('<span class="strum-step strum-up" title="Up stroke">↑</span>')
+            icons.append(f'<span class="strum-step strum-up{push_class}"{push_attr} title="Up stroke{push_title}">↑</span>')
         elif t == 'R':
-            icons.append('<span class="strum-step strum-root" title="Root note (down)"><span class="strum-root-arrow">↓</span></span>')
+            icons.append(f'<span class="strum-step strum-root{push_class}"{push_attr} title="Root note (down){push_title}"><span class="strum-root-arrow">↓</span></span>')
         elif t == 'A':
-            icons.append('<span class="strum-step strum-alt" title="Alt root note (down)"><span class="strum-root-arrow">↓</span></span>')
+            icons.append(f'<span class="strum-step strum-alt{push_class}"{push_attr} title="Alt root note (down){push_title}"><span class="strum-root-arrow">↓</span></span>')
         elif t == '-':
             icons.append('<span class="strum-step strum-mute" title="Mute / pause"></span>')
         else:
@@ -594,6 +603,7 @@ def build_html(songs: list[dict]) -> str:
     .strum-alt {{ background: rgba(255, 150, 50, .25); border-color: rgba(255,150,50,.35); color: #ffd4a0; }}
     .strum-root-arrow {{ font-size: 0.7rem; }}
     .strum-mute {{ background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.06); }}
+    .strum-push {{ box-shadow: 0 0 0 2px var(--push-color, #fff); }}
     .tempo-display {{ font-size: 2.6rem; font-weight: 700; color: var(--accent); text-align: center; padding: 10px 8px; background: none; border: 1px solid transparent; border-radius: 12px; cursor: pointer; width: 100%; transition: border-color .2s, background .2s; }}
     .tempo-display:hover {{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }}
     .tempo-display.active {{ background: rgba(255,255,255,.06); border-color: var(--accent); }}

@@ -10,113 +10,113 @@ Spotify: https://open.spotify.com/track/6lFZbCc7pn6Lme1NP7qQqQ?si=cc182413b6bc45
 
 Chord progression:
 Verse
-| C | F |
-| C | F |
-| C | F |
-| C | F |
+| C | Fmaj7/C |
+| C | Fmaj7/C |
+| C | Fmaj7/C |
+| C | Fmaj7/C |
 
 Chorus
-| C | F | C | F |
-| C | F | D | F |
-| C | F |
+| C | Fmaj7/C | C | Fmaj7/C |
+| C | Fmaj7/C | D | Fmaj7/C |
+| C | Fmaj7/C |
 
 Lyrics:
 [Intro]
-C  F  C  F
+C  Fmaj7/C  C  Fmaj7/C
 
 [Verse 1]
-C                                F
+C                                Fmaj7/C
 I saw her today at the reception
-C                          F
+C                          Fmaj7/C
 A glass of wine in her hand
-C                                       F
+C                                       Fmaj7/C
 I knew she would meet her connection
-C                 F
+C                 Fmaj7/C
 At her feet was a footloose man
 
 [Chorus]
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F               
+    C                Fmaj7/C               
 You can't always get what you want
-   D                          F
+   D                          Fmaj7/C
 But if you try sometimes, well you just might find
-               C         F
+               C         Fmaj7/C
 You get what you need
 
 [Verse 2]
-C                             F
+C                             Fmaj7/C
 And I went down to the demonstration
-C                                   F
+C                                   Fmaj7/C
 To get my fair share of abuse
-C                                     F
+C                                     Fmaj7/C
 Singing, "We're gonna vent our frustration
-C              F
+C              Fmaj7/C
 If we don't we're gonna blow a fifty-amp fuse"
 
 [Chorus]
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F               
+    C                Fmaj7/C               
 You can't always get what you want
-   D                          F
+   D                          Fmaj7/C
 But if you try sometimes, well you just might find
-               C         F
+               C         Fmaj7/C
 You get what you need
 
 [Verse 3]
-C                              F
+C                              Fmaj7/C
 I went down to the Chelsea drugstore
-C                                F
+C                                Fmaj7/C
 To get your prescription filled
-C                                          F
+C                                          Fmaj7/C
 I was standing in line with Mr. Jimmy
-C                      F
+C                      Fmaj7/C
 And man, did he look pretty ill
 
-C                               F
+C                               Fmaj7/C
 We decided that we would have a soda
-C                                  F
+C                                  Fmaj7/C
 My favorite flavor, cherry red
-C                                    F
+C                                    Fmaj7/C
 I sung my song to Mr. Jimmy
-C                             F
+C                             Fmaj7/C
 Yeah, and he said one word to me, and that was "dead"
 
 [Chorus]
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-    C                F               
+    C                Fmaj7/C               
 You can't always get what you want
-   D                          F
+   D                          Fmaj7/C
 But if you try sometimes, well you just might find
-               C         F
+               C         Fmaj7/C
 You get what you need
 
 [Verse 4]
-C                                  F
+C                                  Fmaj7/C
 I saw her today at the reception
-C                          F
+C                          Fmaj7/C
 In her glass was a bleeding man
-C                                        F
+C                                        Fmaj7/C
 She was practiced at the art of deception
-C                   F
+C                   Fmaj7/C
 Well I could tell by her blood-stained hands
 
 [Chorus]
-    C                F
+    C                Fmaj7/C
 You can't always get what you want
-     C                F
+     C                Fmaj7/C
 You can't always get what you want
-     C                F
+     C                Fmaj7/C
 You can't always get what you want
-   D                          F
+   D                          Fmaj7/C
 But if you try sometimes, well you just might find
-              C         F
+              C         Fmaj7/C
 You get what you need

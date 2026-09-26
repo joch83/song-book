@@ -2,7 +2,7 @@ Too Cold At Home
 BPM: 93
 Strumming: D - D U D U D U
 
-Spotify:
+Spotify:https://open.spotify.com/track/6EDyFzr3g9EVF7KInqeROm?si=29a27c36ad274aa4
 
 Chord progression:
 | D | G | D | A7 |
@@ -41,7 +41,7 @@ It's so easy not to care, 'bout what's right or what's wrong
 It's too hot to fish, and too hot for golf, and too cold at home
  
 [Instrumental]
-| G   | D   | A7  | D   | D
+G   D   A7   D   D
  
 [Chorus]
         G                         D
