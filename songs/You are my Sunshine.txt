@@ -35,8 +35,8 @@ Please don't take my sunshine away
  
 [Instrumental]
  
-| A   | A   | D   | A   |
-| D   | A   | A E | A
+ A    A    D    A   
+ D    A    A E  A
  
  
 [Verse 2]

@@ -47,6 +47,12 @@ Om ett nedslag eller uppslag inte faktiskt utförs, tas det **inte bort** — de
 
 Om användaren nämner att ett ackordbyte sker tidigt — t.ex. på ett specifikt uppslag innan nästa takt egentligen börjar (synkoperad "push", som i La Bamba där bytet till G7 sker på sista upphaket i F-ackordet) — markera den exakta positionen i strumming-raden med `>ChordName` direkt efter bokstaven, t.ex. `U>G7`.
 
+### Accent (betonat slag)
+
+Om användaren nämner att ett specifikt ned- eller uppslag ska betonas hårdare — lägg till `!` direkt efter bokstaven, t.ex. `D!` eller `U!`. Renderas som en tyngre pilglyf (`⬇`/`⬆` istället för `↓`/`↑`) i större storlek. Kan kombineras med push-markören: `D!>G7`.
+
+Fråga alltid användaren **vilken position** (räknat från 1, eller "n:te nedslaget/uppslaget") accenten gäller — gissa inte. Exempel: Dance The Night Away har accent på 2:a och 4:e downstrum i mönstret `d U D U D U D U`, vilket blev `d U D! U D U D! U` (position 3 och 7).
+
 Detta renderas som en ring i målackordets färg runt just den pilen, plus en uppdaterad tooltip ("Up stroke – ackordbyte till G7"). Fråga alltid användaren vilken exakt position (räknat från 1) det gäller — gissa inte utifrån antaganden om hur takten delas upp mellan ackorden.
 
 ## Steg 4 — Skapa sångfilen

@@ -3,17 +3,13 @@ BPM: 90
 Strumming: R - D - D - D -
 
 Chord progression:
-Intro
-| A |
 
 Chorus
-| A D | E A | A D | E A |
+| A  | D  | E  | A  |
+| A  | D  | E  | A  |
 
 Verse
-| A E | A | A D | E A |
-
-Instrumental (x2)
-| A | D | E | A |
+| A  | E  | A  | A  | D  | E  | A  |
 
 Lyrics:
 [Intro]

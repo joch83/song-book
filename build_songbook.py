@@ -8,9 +8,11 @@ SONG_DIR = Path(__file__).parent
 SONGS_DIR = SONG_DIR / "songs"
 OUTPUT_FILE = SONG_DIR / "index.html"
 
-# Global chord color mapping - same chord always gets same color
-CHORD_COLORS = {
-    # 7 distinct major colors
+# Global chord color mapping - same chord always gets same color.
+# Only the 7 base hues (+ enharmonic sharps/flats) are hardcoded; minor and
+# sus/add shades are derived automatically in get_chord_color() so new chord
+# qualities never need a new hardcoded entry.
+CHORD_HUES = {
     "A": "#448AFF",      # Blue
     "A#": "#74A8FF",     # Light Blue
     "Bb": "#74A8FF",     # Light Blue
@@ -28,41 +30,77 @@ CHORD_COLORS = {
     "G": "#B388FF",      # Purple
     "G#": "#CE9EFF",     # Light Purple
     "Ab": "#CE9EFF",     # Light Purple
-    # Variations — same hue as root, darker shade
-    "A7": "#448AFF",
-    "Am": "#1E6FD9",
-    "B7": "#FF5252",
-    "Bm": "#CC2020",
-    "C7": "#FFD93D",
-    "Cm": "#D9B61F",
-    "D7": "#4ECDC4",
-    "Dm": "#2DA49A",
-    "E7": "#FF9F43",
-    "Em": "#E07B20",
-    "F7": "#4CAF50",
-    "Fm": "#2E7D32",
-    "G7": "#B388FF",
-    "Gm": "#9B59B6",
 }
 
-def get_chord_color(chord: str) -> str:
-    if chord in CHORD_COLORS:
-        return CHORD_COLORS[chord]
+MINOR_SHADE_RATIO = 0.35  # minor chords: hue mixed toward black
+SUS_SHADE_RATIO = 0.35    # sus/add chords: hue mixed toward white
+
+
+def _mix_hex(hex_color: str, target_hex: str, ratio: float) -> str:
+    """Blend hex_color toward target_hex by ratio (0 = no change, 1 = target)."""
+    h = hex_color.lstrip("#")
+    t = target_hex.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    tr, tg, tb = int(t[0:2], 16), int(t[2:4], 16), int(t[4:6], 16)
+    nr = round(r + (tr - r) * ratio)
+    ng = round(g + (tg - g) * ratio)
+    nb = round(b + (tb - b) * ratio)
+    return f"#{nr:02x}{ng:02x}{nb:02x}"
+
+
+def _chord_shade_tier(suffix: str) -> str:
+    """Classify a chord's suffix (everything after the root note) as major/minor/sus."""
+    s = suffix.lower()
+    if "sus" in s or "add" in s:
+        return "sus"
+    if s.startswith("m") and not s.startswith("maj"):
+        return "minor"
+    return "major"
+
+
+ROOT_ORDER = {
+    "A": 0, "A#": 1, "Bb": 1, "B": 2, "C": 3, "C#": 4, "Db": 4,
+    "D": 5, "D#": 6, "Eb": 6, "E": 7, "F": 8, "F#": 9, "Gb": 9, "G": 10,
+    "G#": 11, "Ab": 11,
+}
+TIER_ORDER = {"major": 0, "minor": 1, "sus": 2}
+
+
+def _chord_sort_key(chord: str) -> tuple:
+    """Sort key for the chord bank: grouped by root note, then Major, Minor, Sus."""
     base_chord = chord.split("/")[0]
-    if base_chord in CHORD_COLORS:
-        return CHORD_COLORS[base_chord]
-    # Strip modifiers (sus2, sus4, maj7, add9, etc.) and try root note
-    match = re.match(r'^([A-Ga-g][#b]?)', base_chord)
-    if match:
-        root = match.group(1)[0].upper() + match.group(1)[1:]
-        if root in CHORD_COLORS:
-            return CHORD_COLORS[root]
-    return "#8BD3FF"
+    match = re.match(r'^([A-Ga-g][#b]?)(.*)$', base_chord)
+    if not match:
+        return (99, 99, chord)
+    root_raw, suffix = match.groups()
+    root = root_raw[0].upper() + root_raw[1:]
+    tier = _chord_shade_tier(suffix)
+    return (ROOT_ORDER.get(root, 99), TIER_ORDER.get(tier, 99), chord)
+
+
+def get_chord_color(chord: str) -> str:
+    base_chord = chord.split("/")[0]
+    match = re.match(r'^([A-Ga-g][#b]?)(.*)$', base_chord)
+    if not match:
+        return "#8BD3FF"
+    root_raw, suffix = match.groups()
+    root = root_raw[0].upper() + root_raw[1:]
+    if root not in CHORD_HUES:
+        return "#8BD3FF"
+    hue = CHORD_HUES[root]
+    tier = _chord_shade_tier(suffix)
+    if tier == "minor":
+        return _mix_hex(hue, "#000000", MINOR_SHADE_RATIO)
+    if tier == "sus":
+        return _mix_hex(hue, "#ffffff", SUS_SHADE_RATIO)
+    return hue
 
 CHORD_IMAGES = {
     "A":       "A Major.png",
     "Am":      "A Minor.png",
     "A7":      "A7.png",
+    "Asus2":   "Asus2.png",
+    "Asus4":   "Asus4.png",
     "B7":      "B7.png",
     "Cadd9":   "C Add9.png",
     "C":       "C Major.png",
@@ -175,8 +213,14 @@ def render_strumming_visual(pattern: str) -> str:
     tokens = pattern.split()
     icons = []
     for token in tokens:
-        base, push_sep, push_chord = token.partition('>')
+        left, push_sep, push_chord = token.partition('>')
+        accent = left.endswith('!')
+        base = left[:-1] if accent else left
         t = base.upper()
+        accent_class = ' strum-accent' if accent else ''
+        accent_title = ' (accent)' if accent else ''
+        down_arrow = '⬇' if accent else '↓'
+        up_arrow = '⬆' if accent else '↑'
         push_class = ' strum-push' if push_sep and push_chord else ''
         push_attr = ''
         push_title = ''
@@ -185,13 +229,13 @@ def render_strumming_visual(pattern: str) -> str:
             push_attr = f' style="--push-color:{color};"'
             push_title = f' – ackordbyte till {html.escape(push_chord)}'
         if t == 'D':
-            icons.append(f'<span class="strum-step strum-down{push_class}"{push_attr} title="Down stroke{push_title}">↓</span>')
+            icons.append(f'<span class="strum-step strum-down{accent_class}{push_class}"{push_attr} title="Down stroke{accent_title}{push_title}">{down_arrow}</span>')
         elif t == 'U':
-            icons.append(f'<span class="strum-step strum-up{push_class}"{push_attr} title="Up stroke{push_title}">↑</span>')
+            icons.append(f'<span class="strum-step strum-up{accent_class}{push_class}"{push_attr} title="Up stroke{accent_title}{push_title}">{up_arrow}</span>')
         elif t == 'R':
-            icons.append(f'<span class="strum-step strum-root{push_class}"{push_attr} title="Root note (down){push_title}"><span class="strum-root-arrow">↓</span></span>')
+            icons.append(f'<span class="strum-step strum-root{accent_class}{push_class}"{push_attr} title="Root note (down){accent_title}{push_title}"><span class="strum-root-arrow">{down_arrow}</span></span>')
         elif t == 'A':
-            icons.append(f'<span class="strum-step strum-alt{push_class}"{push_attr} title="Alt root note (down){push_title}"><span class="strum-root-arrow">↓</span></span>')
+            icons.append(f'<span class="strum-step strum-alt{accent_class}{push_class}"{push_attr} title="Alt root note (down){accent_title}{push_title}"><span class="strum-root-arrow">{down_arrow}</span></span>')
         elif t == '-':
             icons.append('<span class="strum-step strum-mute" title="Mute / pause"></span>')
         else:
@@ -524,7 +568,7 @@ def build_html(songs: list[dict]) -> str:
         f'<img src="{get_chord_image_path(chord)}" alt="{html.escape(chord)}" loading="lazy">'
         f'<span style="color:{get_chord_color(chord)};">{html.escape(chord)}</span>'
         f'</div>'
-        for chord in CHORD_IMAGES
+        for chord in sorted(CHORD_IMAGES, key=_chord_sort_key)
     )
     chord_images_js = "{" + ", ".join(
         f'"{k}": "{get_chord_image_path(k)}"' for k in CHORD_IMAGES
@@ -602,6 +646,8 @@ def build_html(songs: list[dict]) -> str:
     .strum-root {{ background: rgba(255, 206, 86, .22); border-color: rgba(255,206,86,.3); color: #fff3b2; }}
     .strum-alt {{ background: rgba(255, 150, 50, .25); border-color: rgba(255,150,50,.35); color: #ffd4a0; }}
     .strum-root-arrow {{ font-size: 0.7rem; }}
+    .strum-accent {{ font-size: 1.15rem; }}
+    .strum-accent .strum-root-arrow {{ font-size: 0.85rem; }}
     .strum-mute {{ background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.06); }}
     .strum-push {{ box-shadow: 0 0 0 2px var(--push-color, #fff); }}
     .tempo-display {{ font-size: 2.6rem; font-weight: 700; color: var(--accent); text-align: center; padding: 10px 8px; background: none; border: 1px solid transparent; border-radius: 12px; cursor: pointer; width: 100%; transition: border-color .2s, background .2s; }}
